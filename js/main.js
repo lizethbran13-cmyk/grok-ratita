@@ -12,12 +12,13 @@ import { Net } from './net.js';
 import { Game } from './game.js';
 import { Player } from './player.js';
 import { $ } from './util.js';
+import { loadFont } from './text3d.js';
 const app = window.__rr = { state: 'boot', paused: true, game: null, ready: false, simSpeed: 1 };
 function setLoad(p, t) { const b = $('loadBar'); if (b) b.style.width = p + '%'; if (t) $('loadTxt').textContent = t; }
 async function boot() {
   setLoad(15, 'Waking up the rats…');
   initEngine($('c'), S.opts.quality); E.autoQ = S.opts.autoQ; E.onAutoLow = () => { app.hud.toast('⚡ Switched to LOW graphics to keep things smooth'); S.opts.quality = 'low'; persist(); };
-  initMats(); initInput(); setSound(S.opts.sound, S.opts.music);
+  await loadFont(); initMats(); initInput(); setSound(S.opts.sound, S.opts.music);
   app.hud = new HUD(); app.net = new Net(app);
   const unlock = () => { initAudio(); }; window.addEventListener('touchstart', unlock, { passive: true }); window.addEventListener('mousedown', unlock); window.addEventListener('keydown', unlock);
   $('hPause').addEventListener('click', () => { sfx('click'); app.pause(); });

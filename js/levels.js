@@ -4,6 +4,7 @@ import { rbox } from './world.js';
 import { rcyl, lathe, sph, cyl, torus, capsule, cone, tube, leaf, wedge, star, heart, gear, blobGeo } from './shapes.js';
 import { LEVELS } from './data.js';
 import { S } from './save.js';
+import { textGeo } from './text3d.js';
 const PI = Math.PI;
 const INDOOR = { sunDir: [0.35, 0.8, 0.45], sunColor: 0xfff1d6, sunI: 2.3, hemiSky: 0xfff4e6, hemiGround: 0xc9a27a, hemiI: 0.75, skyTop: 0x5fb4ff, skyMid: 0xbfe6ff, skyBot: 0xfff1d6, fog: 0xf6ead8, fogD: 0.0026, envI: 0.85, exposure: 0.94, bloomT: 1.02, bloomS: 0.42, envLight: 0xfff3e0 };
 export function buildLevel(id, w, seed) { kit(w); propSeed(7 + id.length * 13); const f = BUILD[id] || BUILD.kitchen; f(w); w.env = Object.assign({}, INDOOR, w.env || {}); w.music = w.music || id; return w; }
@@ -39,16 +40,57 @@ BUILD.hq = (w) => {
   w.nursery = { x: -14, y: 1.45, z: 9, n: nb };
   // cozy props
   PR.bookshelf(w, 17.5, 8, -PI / 2, 9, 9, 3, 0x9a6a3e, 3); PR.plant(w, 17, 0, -11, 1.4); PR.plant(w, -17, 0, -11, 1.3, 0x3b82f6); PR.lamp(w, -17, 13, 0, 8);
-  for (let i = 0; i < 5; i++) PR.cardboard(w, 10 + (i % 3) * 2.2, (i > 2 ? 1.6 : 0), 11, 0.2 * i, 2, 1.6, 2, false);
-  PR.ball(w, 6, 0, 10, 1.0, 0x3ff0ff, 0xffd23f); PR.toyBlock(w, -7, 0, 11, 1.4, 0.4); PR.toyBlock(w, -5.8, 0, 11.4, 1.2, 0.9); PR.mug(w, -12.5, 4.2, -1, 0, 0xff4fa0);
+  for (let i = 0; i < 5; i++) PR.cardboard(w, 10 + (i % 3) * 2.2, (i > 2 ? 1.6 : 0), 13.6, 0.2 * i, 2, 1.6, 2, false);
+  PR.ball(w, 4.5, 0, 12.5, 1.0, 0x3ff0ff, 0xffd23f); PR.toyBlock(w, 17, 0, 13.4, 1.4, 0.4); PR.toyBlock(w, 17.2, 1.4, 13.4, 1.2, 0.9); PR.mug(w, -12.5, 4.2, -1, 0, 0xff4fa0);
   w.frameArt('z', -20, 0, 6, 4, 3, 1, 0); w.frameArt('z', 20, -9, 6, 3, 3.6, -1, 1); PR.clock(w, 'x', 15, 0, 9, -1);
   // pipes + lights along ceiling for "secret base" feel
   for (let i = 0; i < 3; i++) w.add('x', cyl(14), [0x3ff0ff, 0xff4fa0, 0xffd23f][i], 0, 11.5 - i * 0.7, -14 + i * 0.7, 0, 0, PI / 2, 0.25, 38, 0.25, 0.15);
   [-12, 0, 12].forEach((x) => { w.add('l', sph(16), 0xffe6b0, x, 11.6, 4, 0, 0, 0, 0.7, 0.4, 0.7, 1); });
-  w.martinaSpec = { x: 8, z: 3, yaw: -0.6, say: 'hi' };
-  w.cp(0, 0, 9); w.hint(-20, 2, 20, 15, '🏠 Ratita HQ! Walk into a mouse-hole door to explore a room. Visit the workbench to buy upgrades.');
+  hqExtras(w);
+  w.martinaSpec = { x: 11.5, z: 3.5, yaw: -0.9, say: 'hi' };
+  w.cp(3, 0, 10); w.hint(-20, 2, 20, 15, '🏠 Ratita HQ! Walk into a mouse-hole door to explore a room. Visit the workbench to buy upgrades.');
   w.env = { exposure: 1.0, fog: 0xf5dcc0, fogD: 0.004, hemiI: 0.9 };
 };
+// dense Ratita HQ dressing: 3D signage, gadget display cases, rat-sized lounge, assembly line, cheese vault
+function hqExtras(w) {
+  const sign = (str, x, y, z, ry, size, col, back) => { const g = textGeo(str, size, size * 0.3); if (!g) return; const W = g.userData.w; const c = Math.cos(ry), sn = Math.sin(ry);
+    w.add('g', g, col, x, y, z, 0, ry, 0, 1, 1, 1, 0.15); if (back) { w.add('g', rbox(W + size * 1.2, size * 1.7, 0.3, 0.25), back, x - sn * size * 0.25, y + size * 0.45, z - c * size * 0.25, 0, ry, 0);
+      for (let i = 0; i < 9; i++) w.add('l', sph(8), 0xfff3b0, x - sn * size * 0.2 + c * (-W / 2 - size * 0.4 + i * (W + size * 0.8) / 8), y - size * 0.35, z - c * size * 0.2 + sn * (-W / 2 - size * 0.4 + i * (W + size * 0.8) / 8), 0, 0, 0, 0.16, 0.16, 0.16, 1); } };
+  sign('RATITA INDUSTRIES', 0, 9.3, -14.9, 0, 1.25, 0xff4fa0, 0xfff1c9); w.add('g', gear(10), 0x3ff0ff, -13.6, 10, -14.9, 0, 0, 0, 0.9, 0.9, 0.3); w.add('g', gear(10), 0xffd23f, 13.6, 10, -14.9, 0, 0, 0, 0.9, 0.9, 0.3);
+  sign('UPGRADES', -19.5, 8, -3, PI / 2, 0.9, 0x3ff0ff, 0x3b2a5a); sign('NURSERY', -19.5, 5.5, 9, PI / 2, 0.7, 0xff8fd0, 0xfff1f8); sign('OUTFITS', 13.0, 8.4, -3, -PI / 2, 0.6, 0xffd23f, 0x7c2d6b);
+  // floor logo: flat gear around the cheese wedge + a second lab rug + small mats
+  w.add('g', gear(12), 0xffd23f, 0, 0.22, 2, -PI / 2, 0, 0, 3.6, 3.6, 0.25); w.add('g', rcyl(2.6, 0.12, 0.05, 40), 0xff4fa0, 0, 0.26, 2);
+  PR.rug(w, -12, -3, 0, 7, 11, 0x3ff0ff, 0xe0fbff); PR.rug(w, 12, 8.5, 0, 8, 7, 0xffd23f, 0xfff7d1); PR.rug(w, -6, 11.5, 0, 9, 6, 0xa78bfa, 0xf3e8ff);
+  // gadget display cases (pedestal + glass + real 3D gadget inside)
+  const cases = [[-8, 0.5, 'glider'], [-8, 4.5, 'grapple'], [7.5, 0, 'blaster'], [7.5, -3.6, 'jet']];
+  cases.forEach(([x, z, k]) => { w.slab('g', 0x3b2a5a, x, 0, z, 2, 1.6, 2, 0.2); w.add('l', rbox(1.7, 0.08, 1.7, 0.04), 0x3ff0ff, x, 1.62, z, 0, 0, 0, 1, 1, 1, 0.5); w.add('e', rbox(1.8, 2, 1.8, 0.15), 0xdff6ff, x, 2.65, z); w.add('g', rbox(1.9, 0.2, 1.9, 0.08), 0xffd23f, x, 3.7, z);
+    const y = 2.5; if (k === 'glider') { [-1, 1].forEach((s) => w.add('g', wedge(), 0xff4fa0, x + s * 0.45, y, z, PI / 2, 0, s * 0.3, 0.6, 0.3, 0.12)); w.add('x', cyl(10), 0xd1d5db, x, y, z, 0, 0, PI / 2, 0.05, 1.2, 0.05); }
+    else if (k === 'grapple') { w.add('x', torus(0.18, 24), 0x3ff0ff, x, y + 0.2, z, 0, 0, 0, 0.45); w.add('x', cyl(10), 0x9ca3af, x, y - 0.6, z, 0, 0, 0, 0.06, 0.9, 0.06); }
+    else if (k === 'blaster') { w.add('g', rcyl(0.28, 1.1, 0.1, 18), 0xffd23f, x, y, z, 0, 0, PI / 2); w.add('g', sph(14), 0xff9f1c, x - 0.5, y, z, 0, 0, 0, 0.38); w.add('l', sph(10), 0xfff36b, x + 0.6, y, z, 0, 0, 0, 0.16, 0.16, 0.16, 0.8); }
+    else { w.add('x', cone(16), 0xef4444, x, y + 0.4, z, 0, 0, 0, 0.3, 0.5, 0.3); w.add('x', cyl(16), 0xd1d5db, x, y - 0.3, z, 0, 0, 0, 0.3, 0.7, 0.3); w.add('l', cone(12), 0xff9f1c, x, y - 0.75, z, PI, 0, 0, 0.22, 0.4, 0.22, 0.9); }
+  });
+  // rat lounge: matchbox sofa, thread-spool table, bottle-cap stools, thimble lamp
+  w.slab('f', 0xef4444, -8, 0, 12.6, 4.4, 1.1, 1.8, 0.3); w.slab('f', 0xef4444, -8, 1.1, 13.4, 4.4, 1.4, 0.5, 0.25); w.add('f', rbox(1.9, 0.4, 1.3, 0.2), 0xfde68a, -9, 1.25, 12.5); w.add('f', rbox(1.9, 0.4, 1.3, 0.2), 0xfde68a, -7, 1.25, 12.5);
+  w.add('g', rbox(4.6, 0.12, 2, 0.05), 0x1d4ed8, -8, 0.6, 12.6);
+  w.add('m', rcyl(0.9, 1.4, 0.15, 24), 0xc08552, -4.8, 0, 11); w.add('f', rcyl(0.75, 1.0, 0.1, 24), 0x22d3ee, -4.8, 0.2, 11); w.add('m', rcyl(1.1, 0.2, 0.08, 24), 0xc08552, -4.8, 1.3, 11); w.solid(-5.9, 0, 9.9, -3.7, 1.5, 12.1);
+  PR.mug(w, -4.6, 1.5, 11, 0, 0xffffff); [[-2.6, 12], [-4.8, 13.2]].forEach(([x, z]) => { w.add('g', rcyl(0.7, 0.5, 0.08, 21), 0xef4444, x, 0, z); w.add('x', rcyl(0.55, 0.06, 0.03, 21), 0xf1f5f9, x, 0.5, z); w.solid(x - 0.7, 0, z - 0.7, x + 0.7, 0.55, z + 0.7); });
+  w.add('x', lathe([[0, 0], [0.7, 0], [0.55, 1.6], [0.4, 1.8], [0, 1.8]], 20), 0xd1d5db, -11, 0, 12.8); w.add('l', sph(12), 0xfff1c1, -11, 2.2, 12.8, 0, 0, 0, 0.5, 0.5, 0.5, 1); w.solid(-11.7, 0, 12.1, -10.3, 1.8, 13.5);
+  // teacup hot tub
+  w.add('g', lathe([[0, 0], [1.2, 0], [1.9, 1.2], [2.1, 2.2], [2.0, 2.25], [1.8, 1.25], [0, 1.1]], 32), 0xf9fafb, 12, 0, 8.6); w.add('g', torus(0.12, 20), 0xff8fd0, 12, 2.2, 8.6, PI / 2, 0, 0, 2.05, 2.05, 2.05);
+  w.add('e', rcyl(1.85, 0.2, 0.05, 32), 0x7dd3fc, 12, 1.75, 8.6); for (let i = 0; i < 6; i++) w.add('l', sph(8), 0xe0fbff, 12 + Math.cos(i) * 1.1, 2.0, 8.6 + Math.sin(i * 1.7) * 1.1, 0, 0, 0, 0.18, 0.18, 0.18, 0.4);
+  w.add('g', torus(0.18, 16, PI), 0xf9fafb, 14.1, 1.3, 8.6, 0, PI / 2, PI / 2, 0.6, 0.6, 0.6); w.solid(10.1, 0, 6.7, 13.9, 2.2, 10.5);
+  // assembly line (west) + cheese vault (east) under the door shelf
+  w.slab('x', 0x334155, -12.5, 0, -10.6, 9, 1.5, 2, 0.15); w.add('m', rbox(9.2, 0.15, 1.7, 0.05), 0x111827, -12.5, 1.58, -10.6); for (let i = 0; i < 6; i++) w.add('g', gear(8), [0x3ff0ff, 0xffd23f, 0xff4fa0][i % 3], -16 + i * 1.4, 1.95, -10.6, 0, i, 0, 0.35, 0.35, 0.25);
+  w.add('x', cyl(12), 0xf59e0b, -9, 1.5, -10.6, 0, 0, 0, 0.18, 2.2, 0.18); w.add('x', cyl(12), 0xf59e0b, -9.6, 3.7, -10.6, 0, 0, 1.0, 0.15, 1.3, 0.15); w.add('l', sph(10), 0xff4fa0, -10.4, 3.2, -10.6, 0, 0, 0, 0.25, 0.25, 0.25, 0.8);
+  for (let i = 0; i < 5; i++) { const x = 9.5 + (i % 3) * 2.4, y = i > 2 ? 1.1 : 0; w.add('g', rcyl(1.1, 1.1, 0.2, 28), 0xffc93c, x + (i > 2 ? 1.2 : 0), y, -10.8); for (let k = 0; k < 3; k++) w.add('m', sph(8), 0xe8a317, x + (i > 2 ? 1.2 : 0) + Math.cos(k * 2) * 0.6, y + 0.6, -10.8 + 1.02, 0, 0, 0, 0.2, 0.2, 0.06); }
+  w.solid(8.3, 0, -11.9, 15.9, 2.2, -9.7);
+  // bunting along the walls + wall pipes with valves
+  for (let i = 0; i < 22; i++) { const x = -19 + i * 1.8; w.add('f', wedge(), [0xff4fa0, 0xffd23f, 0x3ff0ff, 0xa78bfa][i % 4], x, 11.2 - Math.sin(i / 21 * PI) * 0.8, 14.6, PI, 0, 0, 0.35, 0.45, 0.06); }
+  [[-19.6, 3, 1], [19.6, -8, -1]].forEach(([x, z, s]) => { w.add('x', cyl(14), 0x94a3b8, x - s * 0.1, 0, z, 0, 0, 0, 0.3, 11, 0.3); w.add('g', torus(0.2, 20), 0xef4444, x + s * 0.3, 4, z, 0, PI / 2, 0, 0.6); });
+  // scattered crumbs-of-life: bottle caps, buttons, spools
+  [[3, 11, 0xffd23f], [-1.5, 12.8, 0x22c55e], [15, 1.5, 0x3b82f6], [-17, -8, 0xef4444], [5.5, -10.5, 0xa78bfa]].forEach(([x, z, c]) => { w.add('g', rcyl(0.6, 0.25, 0.08, 21), c, x, 0, z); w.add('g', sph(8), 0xffffff, x, 0.25, z, 0, 0, 0, 0.12, 0.05, 0.12); });
+  PR.plant(w, -2.5, 0, 13.6, 0.8, 0x8b5cf6); PR.plant(w, 17.2, 0, 1.5, 0.9, 0xf59e0b); PR.can(w, -18, 0, -6.5, 0x4f9dff); PR.jar(w, -18.2, 0, -9, 0xffd23f, 0xff4fa0, 2);
+}
 // =====================================================================================  1. KITCHEN
 BUILD.kitchen = (w) => {
   const H = 6.8; // counter height

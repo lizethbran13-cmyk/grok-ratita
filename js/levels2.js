@@ -13,7 +13,7 @@ const lit = (w, x, y, z, c, i = 40, d = 40) => w.lights.push({ x, y, z, c, i, d 
 // =====================================================================================  2. LIVING ROOM
 BUILD.living = (w) => {
   w.room(64, 52, 24, { wall: 0xe9e4ff, wallN: 0xd6e4ff, ceil: 0xfbf7ff, floor: (a, b, c, d) => PR.floorPlanks(w, a, b, c, d, 0, [0xd9a066, 0xcf9257, 0xe0aa72, 0xc98a50]) });
-  w.start = [-26, 0, 18]; w.startYaw = PI; w.cp(-25, 0, 16, PI);
+  w.start = [-26, 0, 18]; w.startYaw = PI; w.cp(-29, 0, 18, PI);
   w.hint(-32, 10, -18, 26, '🛋️ Living Room! Hop up the coffee table and bounce on the couch cushions.');
   // coffee table + clutter
   PR.rug(w, -16, 8, 0, 22, 14, 0x6c7bd9, 0xe0e7ff);
@@ -73,7 +73,7 @@ BUILD.vents = (w) => {
     if (rails === 'x') [x0, x1].forEach((x, k) => { let s = z0; const gs = gaps.filter((g) => g[2] === k || g[2] === undefined); for (const g of gs.concat([[z1, z1]])) { if (g[0] > s) { w.slab('x', R2, x, y, (s + g[0]) / 2, 0.4, 1.2, g[0] - s, 0.15); } s = g[1]; } });
     for (let x = x0 + 2; x < x1 - 1; x += 8) for (let z = z0 + 2; z < z1 - 1; z += 8) w.add('x', cyl(10), 0x4b5566, x, 0, z, 0, 0, 0, 0.35, y - 0.8, 0.35); };
   // D1 start
-  duct(-37, -20, -14, -8, 8); w.start = [-32, 8, -11]; w.startYaw = PI / 2; w.cp(-33, 8, -11, PI / 2);
+  duct(-37, -20, -14, -8, 8); w.start = [-32, 8, -11]; w.startYaw = PI / 2; w.cp(-29, 8, -13, PI / 2);
   w.crumbLine(-30, 8, -11, -22, 8, -11, 5); w.part(-21.5, 8, -13); w.crate(-26, 8, -9.2);
   w.hint(-38, -15, -20, -7, '🌀 Vent Tunnels! Jump into the fan wind to float UP.', 6, 20);
   w.fan(-16.5, 7.5, -11, 2, 11, 32);
@@ -117,7 +117,7 @@ BUILD.garden = (w) => {
   w.add('g', rbox(X * 2, 0.2, Z * 2, 0.1), 0x4caf50, 0, 0, 0); PR.grassField(w, -X, -Z + 6, X, Z, 0, 0.32);
   PR.wall(w, 'x', -Z - 0.6, -X - 1.2, X + 1.2, 40, 0xf2d7b6, { side: 1 }); PR.window(w, 'x', -Z, -10, 12, 10, 22, 1, 0x7dd3fc); PR.window(w, 'x', -Z, 20, 10, 10, 22, 1, 0xfda4af);
   PR.fence(w, 'x', Z + 0.6, -X, X, 18); PR.fence(w, 'z', -X - 0.6, -Z, Z, 18); PR.fence(w, 'z', X + 0.6, -Z, Z, 18); w.bounds = [-X, -Z, X, Z];
-  w.start = [-36, 0, 28]; w.startYaw = PI * 0.8; w.cp(-35, 0, 27, PI * 0.8); PR.mouseHole(w, 'x', -Z, -30, 1, 1);
+  w.start = [-36, 0, 28]; w.startYaw = PI * 0.8; w.cp(-38, 0, 24, PI * 0.8); PR.mouseHole(w, 'x', -Z, -30, 1, 1);
   w.hint(-X, 18, -24, Z, '🌻 The Garden! Candy is awake out here. Stay UP on things and away from her nose!');
   // stone path
   for (let i = 0; i < 9; i++) PR.stone(w, -32 + i * 4.6, 24 - i * 2.2, 1.8);
@@ -163,7 +163,7 @@ BUILD.garden = (w) => {
 // =====================================================================================  5. GARAGE
 BUILD.garage = (w) => {
   w.room(72, 52, 26, { wall: 0xd1d5db, wallN: 0xcbd5e1, ceil: 0xe5e7eb, floor: (a, b, c, d) => PR.floorConcrete(w, a, b, c, d) });
-  w.start = [30, 0, 20]; w.startYaw = PI * 1.15; w.cp(30, 0, 19, PI * 1.15);
+  w.start = [30, 0, 20]; w.startYaw = PI * 1.15; w.cp(33, 0, 22, PI * 1.15);
   w.hint(20, 12, 36, 26, '🔧 Grease Garage! Climb the tires and boxes up to the workbench.');
   // tire stack + boxes
   PR.tire(w, 26, 0, 14, true, 1); PR.tire(w, 26, 1.9, 14, true, 1); w.crumbLine(30, 0, 18, 27, 0, 16, 3); w.crumbRing(26, 3.8, 14, 1.8, 5);
@@ -207,7 +207,7 @@ BUILD.garage = (w) => {
 // =====================================================================================  6. TOY ROOM
 BUILD.toyroom = (w) => {
   w.room(64, 56, 26, { wall: 0xfde2f3, wallN: 0xdbeafe, wallE: 0xe9d5ff, ceil: 0xfff7fb, floor: (a, b, c, d) => PR.floorPlanks(w, a, b, c, d, 0, [0xf2c48d, 0xe9b67a, 0xf7d19e, 0xe2ad70]) });
-  w.start = [-26, 0, 22]; w.startYaw = PI * 0.85; w.cp(-25, 0, 21, PI * 0.85);
+  w.start = [-26, 0, 22]; w.startYaw = PI * 0.85; w.cp(-29, 0, 24, PI * 0.85);
   w.hint(-32, 14, -16, 28, '🧸 Blocktopia! Climb the block stairs to the bed. The mattress is SUPER bouncy!');
   PR.rug(w, -16, 12, 0, 20, 14, 0xa855f7, 0xf3e8ff);
   // block staircase
@@ -255,7 +255,7 @@ BUILD.attic = (w) => {
   const plank = (x, z, sx, sz, y = 2.5) => { P(w, x, y, z, sx, sz, 0xb7854f, 0.6, 'm'); for (let i = 0; i < Math.floor(sx / 2); i++) w.add('m', rbox(0.08, 0.04, sz - 0.2, 0.02), 0x8b5a2b, x - sx / 2 + 1 + i * 2, y + 0.01, z); for (let x2 = x - sx / 2 + 1; x2 < x + sx / 2; x2 += 6) for (let z2 = z - sz / 2 + 1; z2 < z + sz / 2; z2 += 6) w.add('m', rbox(0.8, y - 0.6, 0.8, 0.1), 0x6b4f35, x2, (y - 0.6) / 2, z2); };
   // joists across the pink fluff (rafters below)
   for (let i = 0; i < 10; i++) w.add('m', rbox(0.9, 0.9, 42, 0.1), 0x9a6a3e, -34 + i * 7.6, 0.45, 0);
-  plank(-31, 0, 12, 18); w.start = [-33, 2.5, 4]; w.startYaw = PI / 2; w.cp(-33, 2.5, 4, PI / 2);
+  plank(-31, 0, 12, 18); w.start = [-33, 2.5, 4]; w.startYaw = PI / 2; w.cp(-36, 2.5, 1, PI / 2);
   w.hint(-38, -10, -25, 10, '🌙 The Attic! Walk the wooden beams. Don\u2019t fall in the fluffy pink insulation!', -1, 30);
   PR.trunk(w, -33, -6, 0, 0x7c3aed); PR.suitcase(w, -33, 5.3, -6, 0.2, 0x0ea5e9); w.part(-33, 7.1, -6); PR.toyBlock(w, -28.5, 2.5, -6.5, 2, 0.4);
   PR.lantern(w, -27, 2.5, 7); w.crumbLine(-30, 2.5, 4, -26, 2.5, 0, 3); w.crate(-35, 2.5, 7.5);
