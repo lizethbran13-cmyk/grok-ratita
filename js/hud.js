@@ -2,7 +2,7 @@
 import { $, esc } from './util.js';
 export class HUD {
   constructor() { this.dirty = true; this.el = $('hud'); this.toasts = $('toast'); this.hintT = 0; this.bossB = null; }
-  startLevel(g) { this.g = g; this.dirty = true; this.boss(null); $('hud').classList.remove('hidden'); $('hLevel').textContent = g.world.title || ''; }
+  startLevel(g) { this.g = g; this.dirty = true; this.boss(null); this.hintT = 0; $('hHint').classList.remove('on'); $('hud').classList.remove('hidden'); $('hLevel').textContent = g.world.title || ''; }
   toast(m) { const d = document.createElement('div'); d.className = 'tst'; d.textContent = m; this.toasts.appendChild(d); while (this.toasts.children.length > 3) this.toasts.firstChild.remove(); setTimeout(() => d.classList.add('out'), 2300); setTimeout(() => d.remove(), 2800); }
   hint(m) { const h = $('hHint'); h.textContent = m; h.classList.add('on'); this.hintT = 6; }
   boss(B) { this.bossB = B; $('hBoss').classList.toggle('hidden', !B); if (B) { $('hBossN').textContent = B.D.n; } }

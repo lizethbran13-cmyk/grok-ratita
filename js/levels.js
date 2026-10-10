@@ -5,7 +5,7 @@ import { rcyl, lathe, sph, cyl, torus, capsule, cone, tube, leaf, wedge, star, h
 import { LEVELS } from './data.js';
 import { S } from './save.js';
 const PI = Math.PI;
-const INDOOR = { sunDir: [0.35, 0.8, 0.45], sunColor: 0xfff1d6, sunI: 2.3, hemiSky: 0xfff4e6, hemiGround: 0xc9a27a, hemiI: 0.75, skyTop: 0x5fb4ff, skyMid: 0xbfe6ff, skyBot: 0xfff1d6, fog: 0xf6ead8, fogD: 0.0035, envI: 0.85, exposure: 1.0, bloomT: 0.92, bloomS: 0.42, envLight: 0xfff3e0 };
+const INDOOR = { sunDir: [0.35, 0.8, 0.45], sunColor: 0xfff1d6, sunI: 2.3, hemiSky: 0xfff4e6, hemiGround: 0xc9a27a, hemiI: 0.75, skyTop: 0x5fb4ff, skyMid: 0xbfe6ff, skyBot: 0xfff1d6, fog: 0xf6ead8, fogD: 0.0026, envI: 0.85, exposure: 0.94, bloomT: 1.02, bloomS: 0.42, envLight: 0xfff3e0 };
 export function buildLevel(id, w, seed) { kit(w); propSeed(7 + id.length * 13); const f = BUILD[id] || BUILD.kitchen; f(w); w.env = Object.assign({}, INDOOR, w.env || {}); w.music = w.music || id; return w; }
 const BUILD = {};
 // =====================================================================================  RATITA HQ
@@ -53,11 +53,11 @@ BUILD.hq = (w) => {
 BUILD.kitchen = (w) => {
   const H = 6.8; // counter height
   w.room(60, 50, 22, { wall: 0xfff6e0, wallN: 0xd8f0ff, floor: (a, b, c, d) => PR.floorTiles(w, a, b, c, d, 0, 0xfff7ec, 0xf28c8c, 3), holesN: [[-1, 7, 17, 10]] });
-  w.start = [-25.5, 0, 8]; w.startYaw = PI / 2; PR.mouseHole(w, 'z', -30, 8, 1, 1);
-  w.cp(-26, 0, 8, PI / 2);
+  w.start = [-22, 0, 15]; w.startYaw = -PI + 0.22; PR.mouseHole(w, 'z', -30, 8, 1, 1);
+  w.cp(-24.5, 0, 12.5, -PI + 0.22);
   w.hint(-30, 2, -20, 14, '🐀 Welcome to the giant kitchen! Climb the stool, the chair, then the table.');
   // ---- floor route: stool -> chair -> table
-  PR.stool(w, -24, 6, 0, 2.2, 0x60a5fa); w.crumbLine(-27, 0, 8, -24.5, 0, 6.5, 4); w.crumbArc(-24, 2.2, 6, -19, 3.7, 6, 1.5, 4);
+  PR.stool(w, -24, 6, 0, 2.2, 0x60a5fa); w.crumbLine(-22.3, 0, 13, -23.8, 0, 8.4, 4); w.crumbArc(-24, 2.2, 6, -19, 3.7, 6, 1.5, 4);
   PR.chair(w, -19, 6, PI, 3.4, 0xd99a5e, 0xff7a90); PR.chair(w, -26.5, -4, PI / 2, 3.4, 0xd99a5e, 0x7dd3fc); PR.chair(w, -1.5, -4, -PI / 2, 3.4, 0xd99a5e, 0xa7f3d0);
   PR.table(w, -14, -4, 0, 16, 10, 5.7, 0xc58b52, 0xa86f3c);
   // table top clutter
