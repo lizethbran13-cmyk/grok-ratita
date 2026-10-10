@@ -98,7 +98,7 @@ BUILD.kitchen = (w) => {
   PR.fridge(w, 16.5, -21.6, 0, 13, 0xe8f1ff); w.baby(16.5, 13, -21.5); w.part(18.5, 13, -23); w.crumbRing(16.5, 13, -21.5, 1.8, 6);
   w.hint(7, -25, 13, -17, '🧊 Climb the microwave and cereal boxes to reach the fridge top!', 5);
   // upper cabinets (decor) + shelves
-  PR.upperCabinets(w, -29.5, -2, -23.4, 0, 12.5, 7, 3.6); PR.upperCabinets(w, 7.5, 13, -23.4, 0, 12.5, 7, 3.6); PR.upperCabinets(w, 13.5, 19.5, -22.6, 0, 14.2, 5.5, 5);
+  PR.upperCabinets(w, -29.5, -2, -23.4, 0, 12.5, 7, 3.6); PR.upperCabinets(w, 7.5, 13, -23.4, 0, 12.5, 7, 3.6); PR.upperCabinets(w, 13.5, 19.5, -22.6, 0, 16.6, 5, 5);
   // ---- trolley to the island (moving platform)
   w.mover(10, H - 0.5, -14.6, [5, 0.5, 5], [0, 0, 8.0], 7, 0, 0xffd23f, (T, sub, sz) => { T.box('g', 0xffd23f, 0, 0, 0, sz[0], sz[1], sz[2], 0.2); T.box('g', 0xffd23f, 0, -3.2, 0, sz[0], 0.35, sz[2], 0.15);
     [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => { T.add('x', cyl(12), 0xd1d5db, a * 2.2, -H + 0.9, b * 2.2, 0, 0, 0, 0.14, H - 0.9, 0.14); T.add('m', sph(12), 0x1f2937, a * 2.2, -H + 0.45, b * 2.2, 0, 0, 0, 0.45); }); T.add('g', rcyl(0.6, 0.9, 0.15, 16), 0x4f9dff, -1.4, 0.5, -1.2); });

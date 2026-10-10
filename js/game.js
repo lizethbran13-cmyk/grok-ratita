@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { E, setEnvironment, followShadow } from './engine.js';
 import { World } from './world.js';
 import { buildLevel } from './levels.js';
+import './levels2.js';
 import { Player } from './player.js';
 import { Actors } from './actors.js';
 import { FX } from './fx.js';
@@ -23,7 +24,7 @@ export class Game {
     setEnvironment(w.env); this.applyFog();
     this.fx = new FX(this.scene); this.actors = new Actors(this); this.actors.spawnAll(w);
     this.buildPickups(); this.buildLights();
-    this.players = new Map(); const gad = levelId === 'hq' ? gadgetsFor(99, S) : gadgetsFor(this.levelIdx, S);
+    this.players = new Map(); const gad = levelId === 'hq' ? gadgetsFor(0, S) : gadgetsFor(this.levelIdx, S);
     this.me = new Player({ rat: S.rat, outfit: S.outfit, name: S.name || 'You', local: true, gadgets: gad, pid: opts.pid || 'me' }); this.me.addTo(this.scene); this.me.place(w.start, w.startYaw || 0); this.me.cp = w.start.slice(); this.me.cpYaw = w.startYaw || 0;
     if (opts.slot) { const a = (opts.slot) * 2.1; this.me.x += Math.cos(a) * 1.2; this.me.z += Math.sin(a) * 1.2; }
     this.players.set(this.me.pid, this.me);
