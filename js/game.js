@@ -93,6 +93,12 @@ export class Game {
   hideOccluders(cp, tg) { const A = this.actors; for (const [o, r] of [[A.martina, 2.6], [A.candy, 2.4]]) { if (!o || !o.rig) continue; const R = o.rig.root; const px = o.x, py = o.y + r * 0.5, pz = o.z;
       const sx = tg.x - cp.x, sy = tg.y - cp.y, sz = tg.z - cp.z, L2 = sx * sx + sy * sy + sz * sz || 1; let t = ((px - cp.x) * sx + (py - cp.y) * sy + (pz - cp.z) * sz) / L2; t = Math.max(0, Math.min(1, t));
       const d = Math.hypot(cp.x + sx * t - px, cp.y + sy * t - py, cp.z + sz * t - pz); R.visible = !(t < 0.92 && d < r) && Math.hypot(cp.x - px, cp.y - py, cp.z - pz) > r + 0.4; } }
+  // static props marked fadeable (tire stacks etc.) hide while they sit between the camera and your rat
+  hideStatic(cp, tg) { const F = this.world.fades; if (!F || !F.length) return; const ox = cp.x, oy = cp.y, oz = cp.z, dx = tg.x - ox, dy = tg.y + 0.6 - oy, dz = tg.z - oz;
+    for (const f of F) { const b = f.box; let t0 = 0, t1 = 0.95, ok = true; const o = [ox, oy, oz], d = [dx, dy, dz], mn = [b.min.x - 0.3, b.min.y, b.min.z - 0.3], mx = [b.max.x + 0.3, b.max.y + 0.3, b.max.z + 0.3];
+      for (let i = 0; i < 3 && ok; i++) { if (Math.abs(d[i]) < 1e-6) { if (o[i] < mn[i] || o[i] > mx[i]) ok = false; continue; } let a = (mn[i] - o[i]) / d[i], c = (mx[i] - o[i]) / d[i]; if (a > c) { const q = a; a = c; c = q; } t0 = Math.max(t0, a); t1 = Math.min(t1, c); if (t0 > t1) ok = false; }
+      const inside = tg.x > mn[0] && tg.x < mx[0] && tg.z > mn[2] && tg.z < mx[2] && tg.y > mn[1] - 0.5 && tg.y < mx[1] + 1.2;
+      const near = ox > mn[0] - 2.5 && ox < mx[0] + 2.5 && oz > mn[2] - 2.5 && oz < mx[2] + 2.5 && oy < mx[1] + 2.5; const vis = !((ok || near) && !inside); for (const m of f.meshes) m.visible = vis; } }
   render(dt) { this.fx.update(dt); followShadow(this.me.x, this.me.y, this.me.z); }
   // ------------------------------------------------ host-only: plates/doors/gold
   hostLogic(dt) { const w = this.world; const ps = this.alivePlayers(); const m = this.actors.martina;
@@ -190,7 +196,7 @@ export class Game {
     const want3 = c.tgt.clone().addScaledVector(dir, d);
     if (c.snap) { c.pos.copy(want3); c.snap = false; } else { c.pos.lerp(want3, Math.min(1, dt * 10)); const cur = c.pos.distanceTo(c.tgt); if (cur > d + 0.05) c.pos.copy(c.tgt).addScaledVector(c.pos.clone().sub(c.tgt).normalize(), d); }
     cam.position.copy(c.pos); if (c.shake > 0) { c.shake -= dt; cam.position.x += (Math.random() - 0.5) * c.shake; cam.position.y += (Math.random() - 0.5) * c.shake; }
-    cam.lookAt(c.tgt.x, c.tgt.y + 0.2, c.tgt.z); this.hideOccluders(cam.position, c.tgt); const fov = E.baseFov + (bossOn ? 4 : 0); if (Math.abs(cam.fov - fov) > 0.1) { cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix(); }
+    cam.lookAt(c.tgt.x, c.tgt.y + 0.2, c.tgt.z); this.hideOccluders(cam.position, c.tgt); this.hideStatic(cam.position, c.tgt); const fov = E.baseFov + (bossOn ? 4 : 0); if (Math.abs(cam.fov - fov) > 0.1) { cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix(); }
   }
   // ------------------------------------------------ remote player management
   addRemote(pid, info, slot) { if (this.players.has(pid)) return this.players.get(pid); const p = new Player({ rat: info.rat, outfit: info.outfit, name: info.name, pid, slot }); p.addTo(this.scene); p.place(this.world.start); this.players.set(pid, p); this.hud.dirty = true; return p; }

@@ -14,7 +14,7 @@ BUILD.hq = (w) => {
   w.room(40, 30, 13, { wall: 0xffe2c2, wallN: 0xffd3a8, ceil: 0xf5e1c8, floor: (a, b, c, d) => PR.floorPlanks(w, a, b, c, d, 0, [0xb7773f, 0xa86a35, 0xc4834a, 0x9e6230]) });
   w.start = [0, 0, 8]; w.startYaw = PI; w.camDist = 6.2; w.music = 'hq';
   // big rug + logo
-  PR.rug(w, 0, 2, 0, 20, 12, 0xff4fa0, 0xfff0f8); w.add('g', wedge(), 0xffd23f, 0, 0.25, 2, -PI / 2, 0, 0, 2.2, 2.2, 0.6);
+  PR.rug(w, 0, 2, 0, 18, 11, 0xd9468f, 0xffb3d6); w.add('g', wedge(), 0xffd23f, 0, 0.25, 2, -PI / 2, 0, 0, 2.2, 2.2, 0.6);
   // level doors along the back wall (mouse holes in a row) + the 7th on the left
   const doors = LEVELS.map((L, i) => ({ L, i, x: -15 + i * 5, z: -15 }));
   doors.forEach(({ L, i, x, z }) => { const unlocked = i === 0 || S.done[LEVELS[i - 1].id] || S.cheat; const col = parseInt(L.col.slice(1), 16);
@@ -89,6 +89,12 @@ function hqExtras(w) {
   [[-19.6, 3, 1], [19.6, -8, -1]].forEach(([x, z, s]) => { w.add('x', cyl(14), 0x94a3b8, x - s * 0.1, 0, z, 0, 0, 0, 0.3, 11, 0.3); w.add('g', torus(0.2, 20), 0xef4444, x + s * 0.3, 4, z, 0, PI / 2, 0, 0.6); });
   // scattered crumbs-of-life: bottle caps, buttons, spools
   [[3, 11, 0xffd23f], [-1.5, 12.8, 0x22c55e], [15, 1.5, 0x3b82f6], [-17, -8, 0xef4444], [5.5, -10.5, 0xa78bfa]].forEach(([x, z, c]) => { w.add('g', rcyl(0.6, 0.25, 0.08, 21), c, x, 0, z); w.add('g', sph(8), 0xffffff, x, 0.25, z, 0, 0, 0, 0.12, 0.05, 0.12); });
+  // blueprints on the floor, cable runs, parts crates, little toolkits and scattered gadget bits
+  [[3.5, -7, 0.3], [-3, 7.5, -0.4], [15.5, -6, 0.15]].forEach(([x, z, a]) => { const T = w.tf(x, 0, z, a); T.box('m', 0x1d4ed8, 0, 0, 0, 3.4, 0.05, 2.4, 0.02); for (let k = 0; k < 4; k++) T.box('l', 0xdbeafe, -1.2 + k * 0.8, 0.05, 0, 0.05, 0.01, 1.8, 0.01, 0.2); T.box('l', 0xdbeafe, 0, 0.05, 0.4, 2.6, 0.01, 0.05, 0.01, 0.2); T.add('m', cyl(12), 0x93c5fd, 1.75, 0.2, -1.2, PI / 2, 0, 0, 0.2, 2.4, 0.2); });
+  w.add('g', tube([[-19.5, 0.12, -12], [-14, 0.12, -13.5], [-6, 0.12, -12.8], [0, 0.12, -13.6], [8, 0.12, -13], [19.5, 0.12, -13.8]], 0.14, 60, 8), 0xff4fa0, 0, 0, 0);
+  w.add('g', tube([[-19.5, 0.1, 6], [-16, 0.1, 5], [-14.5, 0.1, 1], [-14, 0.1, -3]], 0.12, 40, 8), 0x3ff0ff, 0, 0, 0);
+  [[17, -13, 0.2], [-17.5, 2, -0.3]].forEach(([x, z, a]) => { PR.cardboard(w, x, 0, z, a, 2.4, 1.8, 2.2, true); for (let k = 0; k < 3; k++) w.add('g', gear(8), [0xffd23f, 0x3ff0ff, 0xc0c6cf][k], x + (k - 1) * 0.6, 2.1, z, 0.4, k, 0, 0.3, 0.3, 0.2); });
+  PR.scatter(w, -19, -14, 19, 14, 46, 'lab');
   PR.plant(w, -2.5, 0, 13.6, 0.8, 0x8b5cf6); PR.plant(w, 17.2, 0, 1.5, 0.9, 0xf59e0b); PR.can(w, -18, 0, -6.5, 0x4f9dff); PR.jar(w, -18.2, 0, -9, 0xffd23f, 0xff4fa0, 2);
 }
 // =====================================================================================  1. KITCHEN

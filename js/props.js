@@ -7,15 +7,26 @@ let seed = 1; const R = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 export function propSeed(s) { seed = s | 0 || 1; }
 export const pick = (a) => a[(R() * a.length) | 0];
 export const rnd = R;
+const _sc = { r: 0, g: 0, b: 0 }; function shade(c, k) { const r = Math.min(255, ((c >> 16) & 255) * k) | 0, g = Math.min(255, ((c >> 8) & 255) * k) | 0, b = Math.min(255, (c & 255) * k) | 0; return (r << 16) | (g << 8) | b; }
+function THREE_Color() { return _sc; }
 const BOOK = [0xe94f64, 0x3b82f6, 0x22c55e, 0xf59e0b, 0x8b5cf6, 0x14b8a6, 0xf97316, 0xec4899, 0x0ea5e9, 0x84cc16, 0xb45309, 0x6366f1];
 const BRIGHT = [0xff5d73, 0x4f9dff, 0x3ddc84, 0xffc93c, 0xa66bff, 0x2dd4bf, 0xff8a3d, 0xff6fcf];
 
 export const PR = {
   // ---------- structure ----------
   floorPlanks(w, x0, z0, x1, z1, y = 0, cols = [0xc98d55, 0xbd8048, 0xd39a62, 0xb7773f]) {
-    const pw = 2.2; let i = 0;
+    const pw = 2.2; let i = 0; const C = new THREE_Color();
+    w.add('m', rbox(x1 - x0, 0.3, z1 - z0, 0.05, 1), shade(cols[0], 0.45), (x0 + x1) / 2, y - 0.5, (z0 + z1) / 2); // dark seams between boards
     for (let x = x0; x < x1 - 0.01; x += pw, i++) { const ww = Math.min(pw, x1 - x); let z = z0 + ((i * 7.3) % 9) - 9;
-      while (z < z1) { const len = 9 + ((i * 13 + z) % 5); const za = Math.max(z, z0), zb = Math.min(z + len, z1); if (zb - za > 0.2) w.add('m', rbox(ww - 0.06, 0.4, zb - za - 0.06, 0.06, 1), pick(cols), x + ww / 2, y - 0.2, (za + zb) / 2); z += len; } }
+      while (z < z1) { const len = 9 + ((i * 13 + z) % 5); const za = Math.max(z, z0), zb = Math.min(z + len, z1);
+        if (zb - za > 0.2) { const base = shade(pick(cols), 0.88 + R() * 0.24), cx = x + ww / 2, cz = (za + zb) / 2, L = zb - za;
+          w.add('m', rbox(ww - 0.12, 0.4, L - 0.12, 0.08, 2), base, cx, y - 0.2, cz);
+          // wood grain: long thin darker streaks + the odd knot, nail heads at the board ends
+          const ng = 2 + ((R() * 2) | 0); for (let k = 0; k < ng; k++) { const gl = L * (0.35 + R() * 0.5), gz = za + 0.4 + R() * Math.max(0.1, L - gl - 0.8) + gl / 2;
+            w.add('m', rbox(0.07 + R() * 0.07, 0.03, gl, 0.012, 1), shade(base, 0.78 + R() * 0.1), x + 0.3 + R() * (ww - 0.6), y + 0.005, gz); }
+          if (R() < 0.35) w.add('m', sph(10), shade(base, 0.62), x + 0.4 + R() * (ww - 0.8), y + 0.0, za + 1 + R() * Math.max(0.1, L - 2), 0, R() * 3, 0, 0.32, 0.03, 0.22);
+          if (L > 3) [za + 0.45, zb - 0.45].forEach((nz) => [-0.5, 0.5].forEach((o) => w.add('x', sph(6), 0x8d8f94, cx + o * (ww - 0.7), y + 0.005, nz, 0, 0, 0, 0.08, 0.02, 0.08)));
+        } z += len; } }
     w.solid(x0, y - 2, z0, x1, y, z1, { floor: true });
   },
   floorTiles(w, x0, z0, x1, z1, y = 0, a = 0xf3efe6, b = 0x3e4a6b, ts = 3) {
@@ -24,9 +35,43 @@ export const PR = {
     w.solid(x0, y - 2, z0, x1, y, z1, { floor: true });
   },
   floorConcrete(w, x0, z0, x1, z1, y = 0) {
-    for (let x = x0, i = 0; x < x1 - 0.01; x += 8, i++) for (let z = z0, j = 0; z < z1 - 0.01; z += 8, j++) { const ww = Math.min(8, x1 - x), dd = Math.min(8, z1 - z); w.add('m', rbox(ww - 0.1, 0.4, dd - 0.1, 0.05, 1), [0x9ca3af, 0xa3a9b3, 0x959ca7][(i + j * 2) % 3], x + ww / 2, y - 0.2, z + dd / 2); }
+    w.add('m', rbox(x1 - x0, 0.3, z1 - z0, 0.05, 1), 0x5b616b, (x0 + x1) / 2, y - 0.5, (z0 + z1) / 2); // joint lines
+    for (let x = x0, i = 0; x < x1 - 0.01; x += 8, i++) for (let z = z0, j = 0; z < z1 - 0.01; z += 8, j++) { const ww = Math.min(8, x1 - x), dd = Math.min(8, z1 - z); const c = shade([0x9ca3af, 0xa3a9b3, 0x959ca7][(i + j * 2) % 3], 0.94 + R() * 0.1);
+      w.add('m', rbox(ww - 0.18, 0.4, dd - 0.18, 0.06, 1), c, x + ww / 2, y - 0.2, z + dd / 2);
+      // speckles + the odd hairline crack on each slab
+      for (let k = 0; k < 7; k++) w.add('m', sph(6), shade(c, R() < 0.5 ? 0.8 : 1.12), x + 0.5 + R() * (ww - 1), y + 0.0, z + 0.5 + R() * (dd - 1), 0, 0, 0, 0.12 + R() * 0.15, 0.02, 0.12 + R() * 0.15);
+      if (R() < 0.45) { let cx = x + 1 + R() * (ww - 2), cz = z + 1 + R() * (dd - 2), a = R() * 6; for (let k = 0; k < 4; k++) { const l = 0.8 + R() * 1.2; a += (R() - 0.5) * 1.4; const nx = cx + Math.cos(a) * l, nz = cz + Math.sin(a) * l; w.add('m', rbox(0.06, 0.03, l, 0.01, 1), shade(c, 0.6), (cx + nx) / 2, y + 0.005, (cz + nz) / 2, 0, -a + PI / 2, 0); cx = nx; cz = nz; } } }
     w.solid(x0, y - 2, z0, x1, y, z1, { floor: true });
   },
+  // decorative oil stain: dark glossy irregular puddle (flat, walk-over)
+  oilStain(w, x, z, s = 2) { for (let k = 0; k < 5; k++) w.add('g', sph(14), k ? 0x1f2430 : 0x111827, x + (k ? (R() - 0.5) * s * 1.2 : 0), 0.0, z + (k ? (R() - 0.5) * s * 1.2 : 0), 0, R() * 6, 0, s * (k ? 0.35 + R() * 0.3 : 0.8), 0.025, s * (k ? 0.3 + R() * 0.3 : 0.6)); },
+  // rat-scale floor clutter, skipping anything with a collider; kind 'home' | 'garage' | 'lab'
+  scatter(w, x0, z0, x1, z1, n, kind = 'home') { const S = w.solids.filter((q) => !q.floor && q.max[1] > 0.05);
+    const free = (x, z) => !S.some((q) => x > q.min[0] - 0.7 && x < q.max[0] + 0.7 && z > q.min[2] - 0.7 && z < q.max[2] + 0.7 && q.min[1] < 1);
+    const K = { home: ['button', 'coin', 'pencil', 'crayon', 'marble', 'brick', 'cap', 'clip', 'dust', 'paper', 'sock', 'button', 'marble'], garage: ['nut', 'bolt', 'washer', 'screw', 'battery', 'rag', 'sawdust', 'drip', 'nut', 'washer', 'zip'], lab: ['gear', 'nut', 'washer', 'spring', 'chip', 'screw', 'button', 'battery', 'gear'] }[kind];
+    let placed = 0, tries = 0; while (placed < n && tries++ < n * 8) { const x = x0 + R() * (x1 - x0), z = z0 + R() * (z1 - z0); if (!free(x, z)) continue; placed++; const a = R() * PI * 2, t = pick(K), T = w.tf(x, 0, z, a);
+      if (t === 'button') { const c = pick(BRIGHT); T.add('g', rcyl(0.45, 0.14, 0.05, 20), c, 0, 0, 0); [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([u, v]) => T.add('m', cyl(8), shade(c, 0.55), u * 0.1, 0.1, v * 0.1, 0, 0, 0, 0.05, 0.06, 0.05)); }
+      else if (t === 'coin') { T.add('x', rcyl(0.55, 0.1, 0.04, 28), R() < 0.5 ? 0xd4a017 : 0xc0c6cf, 0, 0, 0); T.add('x', torus(0.04, 20), 0xffe58a, 0, 0.1, 0, PI / 2, 0, 0, 0.42); }
+      else if (t === 'pencil') { const c = pick([0xffc93c, 0x3b82f6, 0xef4444]); T.add('g', cyl(6), c, 0, 0.14, 0, PI / 2, 0, 0, 0.14, 1.8, 0.14); T.add('m', cone(12), 0xf2c38b, 0, 0.14, 1.8, PI / 2, 0, 0, 0.14, 0.4, 0.14); T.add('m', cone(8), 0x333333, 0, 0.14, 2.12, PI / 2, 0, 0, 0.05, 0.12, 0.05); T.add('g', cyl(10), 0xff8fb1, 0, 0.14, -0.2, PI / 2, 0, 0, 0.15, 0.2, 0.15); }
+      else if (t === 'crayon') { const c = pick(BRIGHT); T.add('g', cyl(10), c, 0, 0.18, 0, PI / 2, 0, 0, 0.18, 1.1, 0.18); T.add('g', cone(10), c, 0, 0.18, 1.1, PI / 2, 0, 0, 0.18, 0.35, 0.18); T.add('m', cyl(10), 0xffffff, 0, 0.18, 0.1, PI / 2, 0, 0, 0.19, 0.5, 0.19); }
+      else if (t === 'marble') { w.add('e', sph(16), pick([0x60a5fa, 0x34d399, 0xf472b6, 0xfbbf24]), x, 0.32, z, 0, 0, 0, 0.32); w.add('l', sph(8), pick(BRIGHT), x, 0.32, z, 0, a, 0, 0.12, 0.2, 0.06, 0.2); }
+      else if (t === 'brick') { const c = pick(BRIGHT); T.box('g', c, 0, 0, 0, 1.2, 0.45, 0.6, 0.05); [-0.3, 0.3].forEach((u) => T.add('g', rcyl(0.17, 0.12, 0.03, 14), c, u, 0.45, 0)); }
+      else if (t === 'cap') { T.add('x', rcyl(0.5, 0.22, 0.04, 21), pick([0xef4444, 0x22c55e, 0x3b82f6, 0xffd23f]), 0, 0, 0); }
+      else if (t === 'clip') { T.add('x', torus(0.035, 14, PI), 0xc0c6cf, 0, 0.04, 0.3, PI / 2, 0, 0, 0.25); T.add('x', torus(0.035, 14, PI), 0xc0c6cf, 0, 0.04, -0.3, -PI / 2, 0, 0, 0.2); [-0.25, 0.25].forEach((u) => T.add('x', cyl(6), 0xc0c6cf, u, 0.04, -0.3, PI / 2, 0, 0, 0.035, 0.6, 0.035)); }
+      else if (t === 'dust') { for (let k = 0; k < 5; k++) T.add('f', sph(10), 0xd6d3d1, (R() - 0.5) * 0.6, 0.2, (R() - 0.5) * 0.6, 0, 0, 0, 0.3, 0.22, 0.3); }
+      else if (t === 'paper') { w.add('m', blobGeo((x * 9 + z * 5) | 0, 0.35, 1), 0xf8fafc, x, 0.35, z, 0, a, 0, 0.4); }
+      else if (t === 'sock') { const c = pick([0xf472b6, 0x60a5fa, 0xfbbf24]); T.add('f', capsule(12), c, 0, 0.18, 0, PI / 2, 0, 0, 0.35, 1.2, 0.2); T.add('f', capsule(12), c, 0.5, 0.18, 0.9, PI / 2, 0, 0, 0.32, 0.6, 0.2); T.add('f', cyl(12), 0xffffff, 0, 0.2, -0.9, PI / 2, 0, 0, 0.36, 0.25, 0.22); }
+      else if (t === 'nut' || t === 'washer') { T.add('x', t === 'nut' ? cyl(6) : torus(0.35, 20), 0x9ca3af, 0, t === 'nut' ? 0 : 0.05, 0, t === 'nut' ? 0 : PI / 2, 0, 0, t === 'nut' ? 0.4 : 0.35, t === 'nut' ? 0.24 : 0.35, t === 'nut' ? 0.4 : 0.35); if (t === 'nut') T.add('m', cyl(12), 0x374151, 0, 0.25, 0, 0, 0, 0, 0.18, 0.02, 0.18); }
+      else if (t === 'bolt' || t === 'screw') { T.add('x', cyl(8), 0xb0b6bf, 0, 0.12, 0, PI / 2, 0, 0, 0.1, 1.1, 0.1); T.add('x', t === 'bolt' ? cyl(6) : sph(12), 0xb0b6bf, 0, 0.14, -0.14, PI / 2, 0, 0, 0.24, t === 'bolt' ? 0.14 : 0.12, 0.24); }
+      else if (t === 'battery') { T.add('g', cyl(16), 0x111827, 0, 0.3, 0, PI / 2, 0, 0, 0.3, 1.0, 0.3); T.add('g', cyl(16), 0xf59e0b, 0, 0.3, 0.6, PI / 2, 0, 0, 0.31, 0.4, 0.31); T.add('x', cyl(10), 0xd1d5db, 0, 0.3, 1.0, PI / 2, 0, 0, 0.1, 0.1, 0.1); }
+      else if (t === 'rag') { w.add('f', blobGeo((x * 3 + z * 11) | 0, 0.3, 2), pick([0xef4444, 0x3b82f6]), x, 0.12, z, 0, a, 0, 1.4, 0.15, 1.0); }
+      else if (t === 'sawdust') { for (let k = 0; k < 6; k++) w.add('m', sph(6), 0xe2b97a, x + (R() - 0.5) * 1.6, 0.0, z + (R() - 0.5) * 1.6, 0, 0, 0, 0.3 + R() * 0.3, 0.05, 0.3 + R() * 0.3); }
+      else if (t === 'drip') { this.oilStain(w, x, z, 0.8 + R()); }
+      else if (t === 'zip') { T.add('g', torus(0.03, 16, PI * 1.6), 0xf8fafc, 0, 0.05, 0, PI / 2, 0, 0, 0.6); }
+      else if (t === 'gear') { T.add('x', cyl(12), pick([0xffd23f, 0x3ff0ff, 0xc0c6cf]), 0, 0, 0, 0, 0, 0, 0.5, 0.16, 0.5); for (let k = 0; k < 8; k++) T.box('x', 0xc0c6cf, Math.cos(k * PI / 4) * 0.55, 0, Math.sin(k * PI / 4) * 0.55, 0.18, 0.16, 0.18, 0.03); }
+      else if (t === 'spring') { for (let k = 0; k < 5; k++) T.add('x', torus(0.05, 16), 0xc0c6cf, 0, 0.3, -0.5 + k * 0.25, 0, 0, 0, 0.28); }
+      else if (t === 'chip') { T.box('g', 0x166534, 0, 0, 0, 1.4, 0.08, 1.0, 0.02); T.box('g', 0x111827, 0.2, 0.08, 0, 0.5, 0.1, 0.5, 0.03); for (let k = 0; k < 4; k++) T.box('x', 0xffd23f, -0.5, 0.08, -0.3 + k * 0.2, 0.25, 0.02, 0.06, 0.01); }
+    } return placed; },
   // wall along x (at z) or z (at x), with baseboard; holes: [[from,to,top]] openings (windows/doors)
   wall(w, axis, at, from, to, h, col, o = {}) {
     const th = 1.2, side = o.side || 1; const segs = []; let cur = from; const holes = (o.holes || []).slice().sort((a, b) => a[0] - b[0]);
@@ -126,7 +171,14 @@ export const PR = {
     T.add('f', sph(16), 0xffd23f, -L / 2 + 4, 4.9, -D / 2 + 3.2, -0.3, 0.4, 0, 1.6, 1.6, 0.6); T.add('f', sph(16), 0xff6fae, L / 2 - 4, 4.9, -D / 2 + 3.2, -0.3, -0.3, 0, 1.6, 1.6, 0.6);
     return cushions;
   },
-  rug(w, x, z, ry, L, D, a = 0xf59e0b, b = 0xfef3c7) { const T = w.tf(x, 0, z, ry); T.box('f', a, 0, 0, 0, L, 0.14, D, 0.07); T.box('f', b, 0, 0.02, 0, L - 2, 0.14, D - 2, 0.07); T.box('f', a, 0, 0.04, 0, L - 5, 0.14, D - 5, 0.07); for (let i = 0; i < 6; i++) T.add('f', sph(10), [0xef4444, 0x3b82f6, 0x10b981][i % 3], -L / 2 + 4 + i * (L - 8) / 5, 0.12, 0, 0, 0, 0, 0.8, 0.08, 0.8); },
+  rug(w, x, z, ry, L, D, a = 0xf59e0b, b = 0xfef3c7) { const T = w.tf(x, 0, z, ry);
+    T.box('f', a, 0, 0, 0, L, 0.22, D, 0.1, 0, 3); T.box('f', b, 0, 0.03, 0, L - 1.6, 0.24, D - 1.6, 0.1, 0, 3); T.box('f', a, 0, 0.06, 0, L - 4.4, 0.24, D - 4.4, 0.1, 0, 3);
+    // tufted pile: rows of soft bumps, plus stitched border dots and tassels on the short ends
+    const nx = Math.max(2, Math.round((L - 5) / 1.6)), nz = Math.max(2, Math.round((D - 5) / 1.6));
+    for (let u = 0; u < nx; u++) for (let v = 0; v < nz; v++) if ((u + v) % 2 === 0) T.add('f', sph(10), shade(b, 0.92), -(L - 6) / 2 + u * (L - 6) / Math.max(1, nx - 1), 0.3, -(D - 6) / 2 + v * (D - 6) / Math.max(1, nz - 1), 0, 0, 0, 0.42, 0.07, 0.42);
+    for (let u = 0; u < Math.floor(L / 0.9); u++) [-1, 1].forEach((sd) => T.add('f', sph(6), shade(a, 0.7), -L / 2 + 0.45 + u * 0.9, 0.25, sd * (D / 2 - 0.4), 0, 0, 0, 0.14, 0.04, 0.14));
+    for (let v = 0; v < Math.floor(D / 0.5); v++) [-1, 1].forEach((sd) => T.add('f', cyl(6), b, sd * (L / 2 + 0.25), 0.05, -D / 2 + 0.25 + v * 0.5, 0, 0, PI / 2, 0.07, 0.5, 0.07));
+    for (let i = 0; i < 6; i++) T.add('f', sph(10), [0xef4444, 0x3b82f6, 0x10b981][i % 3], -L / 2 + 4 + i * (L - 8) / 5, 0.3, 0, 0, 0, 0, 0.8, 0.08, 0.8); },
   bookshelf(w, x, z, ry, W, H, D = 3.2, col = 0x9a6a3e, shelves = 5) {
     const T = w.tf(x, 0, z, ry); const sh = []; T.slab('m', col, 0, 0, -D / 2 + 0.2, W, H, 0.4, 0.05); [-1, 1].forEach((s) => T.slab('g', col, s * (W / 2 - 0.25), 0, 0, 0.5, H, D, 0.1));
     for (let i = 0; i <= shelves; i++) { const y = i * (H - 0.5) / shelves; T.slab('g', col, 0, y, 0, W - 0.6, 0.45, D, 0.08); sh.push(y + 0.45);

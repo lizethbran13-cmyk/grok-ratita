@@ -29,16 +29,20 @@ export class World {
   constructor(def) {
     this.def = def || {}; this.group = new THREE.Group(); this.chunks = new Map(); this.solids = []; this.dyn = []; this.zones = []; this.grid = new Map(); this.stamp = 0;
     this.ents = []; this.hooks = []; this.checkpoints = []; this.doors = []; this.plates = []; this.levers = []; this.movers = []; this.enemies = []; this.lights = []; this.anims = []; this.killY = -6; this.route = [];
-    this.tris = 0; this.drawCalls = 0;
+    this.tris = 0; this.drawCalls = 0; this.fades = []; this._fg = null;
   }
+  // props built between fadeBegin/fadeEnd become their own small meshes that hide while they block the camera's view of your rat
+  fadeBegin() { this._fg = { id: this.fades.length, box: new THREE.Box3(), meshes: [] }; this.fades.push(this._fg); }
+  fadeEnd() { this._fg = null; }
   // ---- visuals ----
   _part(bucket, geom, color, m, em = 0) {
     const g0 = prep(geom); const g = g0.clone(); g.applyMatrix4(m);
     const n = g.attributes.position.count, a = new Float32Array(n * 3); _c.set(color); const k = em ? 1 + em : 1;
     for (let i = 0; i < n; i++) { a[i * 3] = _c.r * k; a[i * 3 + 1] = _c.g * k; a[i * 3 + 2] = _c.b * k; }
     g.setAttribute('color', new THREE.BufferAttribute(a, 3));
-    const cx = Math.floor(m.elements[12] / CH), cz = Math.floor(m.elements[14] / CH), key = bucket + ':' + cx + ':' + cz;
-    let ch = this.chunks.get(key); if (!ch) { ch = { bucket, parts: [] }; this.chunks.set(key, ch); } ch.parts.push(g); return g;
+    const F = this._fg; if (F) { g.computeBoundingBox(); F.box.union(g.boundingBox); }
+    const cx = Math.floor(m.elements[12] / CH), cz = Math.floor(m.elements[14] / CH), key = F ? 'F' + F.id + ':' + bucket : bucket + ':' + cx + ':' + cz;
+    let ch = this.chunks.get(key); if (!ch) { ch = { bucket, parts: [], fade: F ? F.id : -1 }; this.chunks.set(key, ch); } ch.parts.push(g); return g;
   }
   add(bucket, geom, color, x, y, z, rx = 0, ry = 0, rz = 0, sx = 1, sy = sx, sz = sx, em = 0) { return this._part(bucket, geom, color, mtx(x, y, z, rx, ry, rz, sx, sy, sz), em); }
   // vertex colour by function (gradients, stripes) after placement
@@ -97,7 +101,7 @@ export class World {
       g.computeBoundingSphere(); g.computeBoundingBox();
       const mesh = new THREE.Mesh(g, MATS[ch.bucket] || MATS.m); mesh.matrixAutoUpdate = false;
       mesh.castShadow = ch.bucket !== 'e' && ch.bucket !== 'l' && ch.bucket !== 'w'; mesh.receiveShadow = ch.bucket !== 'l';
-      if (ch.bucket === 'e') mesh.renderOrder = 2;
+      if (ch.bucket === 'e') mesh.renderOrder = 2; if (ch.fade >= 0) this.fades[ch.fade].meshes.push(mesh);
       this.group.add(mesh); tris += g.index ? g.index.count / 3 : g.attributes.position.count / 3; this.drawCalls++;
     }
     this.chunks.clear(); this.tris = tris; scene.add(this.group); return this;

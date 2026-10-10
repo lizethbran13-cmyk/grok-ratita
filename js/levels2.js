@@ -58,6 +58,7 @@ BUILD.living = (w) => {
   w.cp(0, 0, 13.5, PI / 2);
   w.bossSpec = { type: 'vac', x: 20, y: 0, z: 15, yaw: -PI / 2, arena: [5, 5, 31.4, 25.4] }; w.goldPos = [18, 1.6, 15];
   [[8, 8], [28, 8], [8, 23], [28, 23]].forEach(([x, z]) => w.add('f', sph(18), [0xffd23f, 0x7dd3fc, 0xf9a8d4, 0xa7f3d0][(x + z) % 4], x, 1, z, 0, 0, 0, 2.2, 1.2, 1.6));
+  livingExtras(w);
   w.env = { sunDir: [0.4, 0.8, 0.35] };
 };
 
@@ -166,7 +167,7 @@ BUILD.garage = (w) => {
   w.start = [30, 0, 20]; w.startYaw = PI * 1.15; w.cp(33, 0, 22, PI * 1.15);
   w.hint(20, 12, 36, 26, '🔧 Grease Garage! Climb the tires and boxes up to the workbench.');
   // tire stack + boxes
-  PR.tire(w, 26, 0, 14, true, 1); PR.tire(w, 26, 1.9, 14, true, 1); w.crumbLine(30, 0, 18, 27, 0, 16, 3); w.crumbRing(26, 3.8, 14, 1.8, 5);
+  w.fadeBegin(); PR.tire(w, 20, 0, 4, true, 1); PR.tire(w, 20, 1.9, 4, true, 1); w.fadeEnd(); w.crumbLine(27, 0, 15, 22.5, 0, 7.5, 3); w.crumbRing(20, 3.8, 4, 1.8, 5);
   PR.cardboard(w, 31, 0, 9, 0.1, 5, 5.5, 5); w.cheese(31, 5.5, 9); w.enemy('toycar', 22, 0, 18, { axis: 'x', range: 6 });
   // workbench along the east wall
   PR.workbench(w, 32, -6, PI / 2, 20, 7, 6); PR.toolbox(w, 33, 4.5, PI / 2); PR.hammer(w, 32, 7, -2, 0.4); PR.wrench(w, 31.5, 7, -10, -0.3, 1.2); PR.paintCan(w, 33.5, 7, -13, 0x3b82f6); PR.paintCan(w, 31, 7, -13.5, 0xef4444);
@@ -189,7 +190,7 @@ BUILD.garage = (w) => {
   PR.cardboard(w, cx + 12.5, 0, cz + 1, 0, 3.4, 3, 3.4); w.crumbLine(cx + 9, 5.4, cz, cx - 8, 5.4, cz, 6); w.cheese(cx + 1, 9.2, cz); w.baby(cx + 3, 9.2, cz + 2.5); w.cheese(33, 8.8, 4.5); w.part(cx - 8, 5.4, cz - 3);
   w.hint(cx - 12, cz - 6, cx + 16, cz + 6, '🚗 Climb the car! Stand on the roof for a great view.', -1, 30);
   // floor clutter
-  PR.bike(w, -26, -18, 0.3); PR.tire(w, -32, 0, -6, true, 1.2); PR.tire(w, -32, 2.3, -6, true, 1.2); PR.toolbox(w, -30, 0, PI / 2, 0x2563eb); w.baby(-32, 4.6, -6); w.heartP(-26, 0, -12);
+  PR.bike(w, -26, -18, 0.3); w.fadeBegin(); PR.tire(w, -32, 0, -6, true, 1.2); PR.tire(w, -32, 2.3, -6, true, 1.2); w.fadeEnd(); PR.toolbox(w, -30, 0, PI / 2, 0x2563eb); w.baby(-32, 4.6, -6); w.heartP(-26, 0, -12);
   for (let i = 0; i < 5; i++) PR.paintCan(w, 10 + i * 2.7, 0, 18 + (i % 2), [0xef4444, 0x3b82f6, 0x22c55e, 0xffd23f, 0xa855f7][i]); w.crumbLine(10, 2.25, 18, 21, 2.25, 18.5, 5); w.part(21, 2.25, 19);
   w.add('m', rcyl(3, 0.06, 0.03, 24), 0x111827, 14, 0.02, 4); w.add('m', rcyl(2, 0.06, 0.03, 20), 0x1f2937, 17, 0.03, 6); // oil puddles (decor)
   w.add('l', rbox(0.3, 0.3, 30, 0.1), 0xffffff, -10, 25, 0, 0, 0, 0, 1, 1, 1, 0.6); w.add('l', rbox(0.3, 0.3, 30, 0.1), 0xffffff, 14, 25, 0, 0, 0, 0, 1, 1, 1, 0.6);
@@ -200,9 +201,63 @@ BUILD.garage = (w) => {
   PR.floorTiles(w, -36, 5.2, -6.2, 26, 0.05, 0x374151, 0x1f2937, 3); for (let i = 0; i < 6; i++) w.add('l', rbox(2.2, 0.06, 0.5, 0.05), 0xfff7c2, -32 + i * 5, 0.1, 15.5, 0, 0, 0, 1, 1, 1, 0.3);
   w.cp(-1, 0, 15.5, -PI / 2);
   w.bossSpec = { type: 'rc', x: -22, y: 0.05, z: 16, yaw: PI / 2, arena: [-35.5, 6, -6.4, 25.5] }; w.goldPos = [-20, 1.7, 15.5];
-  lit(w, -20, 20, 15, 0xffffff, 60, 50); lit(w, 20, 20, -6, 0xfff1dc, 60, 50);
+  garageExtras(w);
+  lit(w, -20, 20, 15, 0xffffff, 60, 50); lit(w, 20, 20, -6, 0xfff1dc, 60, 50); lit(w, 2, 20, -18, 0xfff7e6, 50, 45); lit(w, 24, 18, 18, 0xffe9c7, 50, 45);
   w.env = { exposure: 1.0, fog: 0xe5e7eb, fogD: 0.003, hemiSky: 0xf1f5f9, hemiGround: 0x9ca3af, sunDir: [-0.3, 0.8, 0.5] };
 };
+
+function garageExtras(w) {
+  // roller garage door on the south wall (ribbed panels + handle + window strip)
+  for (let i = 0; i < 9; i++) w.add('g', rbox(30, 2.1, 0.5, 0.2), i % 2 ? 0xe5e7eb : 0xd8dde4, 10, 1.2 + i * 2.2, 25.6); for (let k = 0; k < 6; k++) w.add('e', rbox(3.6, 1.2, 0.2, 0.1), 0xbfe8ff, -1.5 + k * 4.6, 16.6, 25.3);
+  w.add('x', rbox(4, 0.5, 0.6, 0.2), 0x6b7280, 10, 3.4, 25.2); w.add('x', rbox(0.8, 22, 0.8, 0.2), 0x9ca3af, -5.4, 0, 25.5); w.add('x', rbox(0.8, 22, 0.8, 0.2), 0x9ca3af, 25.4, 0, 25.5);
+  w.add('m', rbox(30, 0.3, 1.2, 0.1), 0xfacc15, 10, 0.02, 24.6); for (let k = 0; k < 10; k++) w.add('m', rbox(1.4, 0.32, 1.2, 0.05), 0x111827, -3 + k * 3, 0.03, 24.6, 0, 0.6, 0);
+  // tall metal shelving on the east wall near the start: jars, boxes, coiled hose, spray cans
+  PR.shelfUnit(w, 33.6, 15.6, PI / 2, 8, 12, 3.6, 3, 0x475569); w.solid(31.8, 0, 11.6, 35.4, 12, 19.6, { cam: false });
+  [[0, 0x22c55e], [4, 0xef4444], [8, 0x3b82f6]].forEach(([y, c], i) => { PR.jar(w, 33.6, y + 0.3, 13.1, c, 0xffd23f, 1.6); PR.can(w, 33.6, y + 0.3, 15.6, pick2(i), 1.6, 0.6); PR.can(w, 33.2, y + 0.3, 17.9, 0xf97316, 2.0, 0.45); });
+  w.add('g', torus(0.25, 28), 0x16a34a, 33.4, 9.6, 15.6, 0, PI / 2, 0, 1.3); w.add('g', torus(0.25, 28), 0x16a34a, 33.4, 9.6, 15.6, 0.3, PI / 2, 0, 1.15);
+  // stacked storage bins + boxes along the north wall under the high shelf
+  [[-14, 0x3b82f6], [-9, 0xef4444], [-14, 0x22c55e, 3.2]].forEach(([x, c, y = 0]) => { w.slab('g', c, x, y, -23, 4.6, 3.2, 3.4, 0.25); w.add('g', rbox(4.8, 0.4, 3.6, 0.15), shadeC(c), x, y + 3.2, -23); });
+  PR.cardboard(w, -4, 0, -23, 0.05, 4, 3, 3.4); PR.cardboard(w, -4.2, 3, -23.2, -0.1, 3, 2.4, 2.8, true); PR.cardboard(w, 8, 0, -23, 0.1, 3.6, 4.4, 3, true);
+  // second bike, a scooter and a skateboard
+  PR.bike(w, 14, -15, 0.1); w.solid(8.5, 0, -16, 19.5, 6, -14, { cam: false });
+  { const T = w.tf(-20, 0, -14, 0.5); T.box('g', 0x111827, 0, 0.6, 0, 1.6, 0.2, 6, 0.1); [-2.3, 2.3].forEach((z) => [-0.6, 0.6].forEach((x) => T.add('g', rcyl(0.45, 0.4, 0.1, 18), 0xffd23f, x, 0.45, z, 0, 0, PI / 2))); T.add('g', rbox(1.3, 0.05, 5.6, 0.04), 0xff4fa0, 0, 0.82, 0); }
+  { const T = w.tf(16.5, 0, -5, -0.3); T.box('g', 0x3ff0ff, 0, 0.7, 0, 1.4, 0.3, 6.4, 0.12); T.add('x', cyl(10), 0x9ca3af, 0, 1, 2.8, 0.15, 0, 0, 0.12, 7, 0.12); T.add('g', capsule(12), 0x111827, 0, 8, 3.8, 0, 0, PI / 2, 0.25, 3, 0.25); [-2.8, 2.8].forEach((z) => T.add('g', rcyl(0.7, 0.4, 0.1, 18), 0x111827, 0, 0.7, z, 0, 0, PI / 2)); }
+  // ladder leaning on the west end of the north wall + broom + rake + hanging hose reel
+  { const T = w.tf(-26, 0, -24.4, 0); [-1.5, 1.5].forEach((x) => T.add('x', rbox(0.4, 18, 0.5, 0.12), 0xd1d5db, x, 9, 0, -0.12, 0, 0)); for (let k = 0; k < 7; k++) T.add('x', rbox(3, 0.3, 0.4, 0.1), 0x9ca3af, 0, 1.5 + k * 2.4, 0.3 - k * 0.29, -0.12, 0, 0); }
+  { const T = w.tf(-30.5, 0, -24.6, 0); T.add('m', cyl(10), 0xc08552, 0, 2.5, 0, -0.12, 0, 0, 0.18, 14, 0.18); T.box('f', 0xef4444, 0, 0, 0.3, 3, 2.8, 0.6, 0.2); T.add('m', rbox(3.2, 0.5, 0.8, 0.2), 0x7c2d12, 0, 2.8, 0.3); }
+  { const T = w.tf(-33, 0, -24.6, 0); T.add('m', cyl(10), 0xc08552, 0, 0, 0, 0, 0, 0, 0.18, 16, 0.18); for (let k = 0; k < 9; k++) T.add('x', rbox(0.1, 1.2, 0.1, 0.04), 0x6b7280, -1.6 + k * 0.4, 15.8, 0.2); T.add('x', rbox(3.6, 0.3, 0.3, 0.1), 0x6b7280, 0, 16.4, 0.2); }
+  // big wall tools on the west part of the north wall: saw, shovel, coiled rope, pegboard
+  PR.pegboard(w, 'x', -25.4, -19, 6, 10, 7, 1); PR.wrench(w, -22, 9, -25, 0.4, 1.6); PR.hammer(w, -17, 9, -25, 0.3);
+  w.add('m', torus(0.2, 28), 0xd6b88a, -14, 12, -25.2, 0, 0, 0, 1.6); w.add('m', torus(0.2, 28), 0xd6b88a, -14, 11.8, -25.1, 0, 0, 0, 1.3);
+  // jerry can, bucket, watering can, sandbags near the car
+  { const T = w.tf(10.2, 0, -9.2, 0.2); T.box('g', 0xdc2626, 0, 0, 0, 2.4, 3.2, 1.4, 0.3); T.add('x', torus(0.15, 16, PI), 0x9ca3af, 0, 3.4, 0, 0, 0, 0, 0.6); T.add('g', cyl(12), 0xfacc15, 0.8, 3.2, 0, 0, 0, -0.5, 0.25, 0.8, 0.25); T.solid(-1.2, 0, -0.7, 1.2, 3.2, 0.7); }
+  w.add('g', lathe([[0, 0], [1.2, 0], [1.5, 2.4], [1.4, 2.5], [0, 2.4]], 28), 0x60a5fa, 14.5, 0, -9); w.add('x', torus(0.04, 20, PI), 0x9ca3af, 14.5, 2.5, -9, 0, 0, 0, 1.45); w.solid(13.1, 0, -10.5, 15.9, 2.5, -7.5);
+  // oil stains + scattered garage bits
+  [[6, 10, 2.2], [-12, 2, 1.6], [20, 6, 1.4], [-2, 2, 2.6], [16, -18, 1.2]].forEach(([x, z, r]) => PR.oilStain(w, x, z, r));
+  PR.scatter(w, -4, -22, 34, 24, 48, 'garage'); PR.scatter(w, -35, -24, -6, 4, 14, 'garage');
+  // wall stuff: posters, fuse box, clock, extension cord
+  PR.frame(w, 'z', 35.6, -18, 12, 5, 7, -1, 2); PR.frame(w, 'x', -25.6, 6, 14, 6, 4, 1, 1); w.add('g', rbox(3, 4, 0.8, 0.2), 0x9ca3af, 20, 14, -25.4); w.add('l', sph(8), 0x22c55e, 20.8, 15, -24.9, 0, 0, 0, 0.18, 0.18, 0.05, 0.8); w.add('l', sph(8), 0xef4444, 19.2, 15, -24.9, 0, 0, 0, 0.18, 0.18, 0.05, 0.8);
+  w.add('g', tube([[20, 12, -25], [21, 6, -24.9], [24, 0.3, -24], [30, 0.25, -20], [33, 0.3, -18]], 0.15, 40, 8), 0xf97316, 0, 0, 0);
+}
+const pick2 = (i) => [0x3b82f6, 0xa855f7, 0x14b8a6][i % 3];
+const shadeC = (c) => { const r = ((c >> 16) & 255) * 0.75 | 0, g = ((c >> 8) & 255) * 0.75 | 0, b = (c & 255) * 0.75 | 0; return (r << 16) | (g << 8) | b; };
+
+function livingExtras(w) {
+  // slippers + shoes by the start, dog-chew bone, stacked books, laundry basket, floor cushion, toy car, phone with cable
+  [[-21, 21.5, 0.3, 0xf9a8d4], [-19.4, 21.2, 0.1, 0xf9a8d4]].forEach(([x, z, a, c]) => { const T = w.tf(x, 0, z, a); T.add('f', capsule(16), c, 0, 0.35, 0, PI / 2, 0, 0, 1.2, 2.6, 0.6); T.add('f', sph(14), 0xffffff, 0, 0.75, 1.2, 0, 0, 0, 0.7, 0.35, 0.6); });
+  { const T = w.tf(-12, 0, 22.5, -0.2); [-1.6, 1.6].forEach((x) => { T.box('g', 0x1e3a8a, x, 0, 0, 1.4, 1.1, 3.6, 0.5); T.box('m', 0xffffff, x, 0, 0, 1.5, 0.3, 3.7, 0.12); T.box('f', 0xffffff, x, 1.0, -0.6, 0.9, 0.12, 1.4, 0.05); }); T.solid(-2.4, 0, -1.9, 2.4, 1.2, 1.9); }
+  { const T = w.tf(-7.5, 0, 19, 0.6); T.add('g', capsule(14), 0xfef3c7, 0, 0.45, 0, PI / 2, 0, PI / 2, 0.6, 2.2, 0.6); [-1, 1].forEach((s) => [-0.4, 0.4].forEach((z) => T.add('g', sph(14), 0xfef3c7, s * 1.5, 0.45, z, 0, 0, 0, 0.5))); }
+  { const T = w.tf(-4, 0, 14.5, 0.25); const cs = [0xef4444, 0x3b82f6, 0x22c55e, 0xf59e0b, 0x8b5cf6]; for (let i = 0; i < 5; i++) { T.box('m', cs[i], (i % 2) * 0.3, i * 0.75, 0, 4.2 - i * 0.2, 0.7, 3, 0.08); T.box('m', 0xfffbeb, (i % 2) * 0.3 + 0.1, i * 0.75 + 0.08, 0, 4 - i * 0.2, 0.54, 2.8, 0.04); } T.solid(-2.1, 0, -1.6, 2.4, 3.75, 1.6); }
+  { const x = -29.5, z = -13; w.add('g', lathe([[0, 0], [2.6, 0], [3.0, 4.2], [3.15, 4.4], [0, 4.4]], 28), 0x93c5fd, x, 0, z); for (let k = 0; k < 4; k++) w.add('f', blobGeo(k + 31, 0.3, 2), [0xf472b6, 0xfbbf24, 0xffffff, 0x34d399][k], x + Math.cos(k * 1.7) * 1.2, 4.3, z + Math.sin(k * 1.7) * 1.2, 0, k, 0, 1.5, 0.7, 1.3);
+    w.add('f', capsule(12), 0xa78bfa, x + 3.2, 2, z + 1, 0, 0, 0.4, 0.5, 3.2, 0.3); w.solid(x - 3, 0, z - 3, x + 3, 4.4, z + 3); }
+  { const T = w.tf(16, 0, -1.5, 0.3); T.add('f', rbox(6, 1.4, 6, 0.6, 3), 0xfbbf24, 0, 0.7, 0); T.add('f', sph(12), 0xf59e0b, 0, 1.42, 0, 0, 0, 0, 0.4, 0.15, 0.4); T.solid(-3, 0, -3, 3, 1.4, 3); }
+  { const T = w.tf(8, 0, -17, -0.5); T.box('g', 0x22c55e, 0, 0.5, 0, 2.2, 0.9, 4, 0.35); T.box('e', 0xbfe8ff, 0, 1.4, -0.2, 1.8, 0.7, 2, 0.3); [[-1.1, -1.3], [1.1, -1.3], [-1.1, 1.3], [1.1, 1.3]].forEach(([x, z]) => T.add('g', rcyl(0.55, 0.4, 0.1, 18), 0x111827, x, 0.55, z, 0, 0, PI / 2)); T.solid(-1.2, 0, -2, 1.2, 2.1, 2); }
+  { const T = w.tf(-25.5, 0, 9.5, 0.4); T.box('g', 0x111827, 0, 0, 0, 1.7, 0.18, 3.4, 0.2); T.box('l', 0x7dd3fc, 0, 0.18, 0, 1.4, 0.02, 2.9, 0.1, 0.3); }
+  w.add('g', tube([[-25.5, 0.12, 11.2], [-25, 0.12, 13.5], [-28, 0.12, 15], [-31, 0.12, 14.5], [-31.6, 0.6, 12]], 0.1, 40, 8), 0xffffff, 0, 0, 0);
+  // little side table with a lamp + plant between the windows
+  { const T = w.tf(-30, 0, 8, 0); T.add('m', rcyl(1.8, 0.3, 0.1, 28), 0xa16207, 0, 4.6, 0); T.add('m', cyl(12), 0x92400e, 0, 0, 0, 0, 0, 0, 0.25, 4.6, 0.25); T.add('m', rcyl(1.1, 0.2, 0.08, 24), 0x92400e, 0, 0, 0); T.solid(-1.8, 4.3, -1.8, 1.8, 4.9, 1.8); T.solid(-0.4, 0, -0.4, 0.4, 4.6, 0.4); PR.plant(w, -30, 4.9, 8, 0.6, 0x8b5cf6); }
+  PR.scatter(w, -31, -24, 30, 24, 60, 'home');
+}
 
 // =====================================================================================  6. TOY ROOM
 BUILD.toyroom = (w) => {
