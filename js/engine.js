@@ -60,7 +60,7 @@ export function setQuality(q, init) {
   const r = E.renderer;
   const dpr = window.devicePixelRatio || 1;
   E.pixelRatio = E.quality === 'high' ? Math.min(dpr, 2) : Math.min(dpr, 1.25) * 0.85;
-  r.setPixelRatio(E.pixelRatio);
+  E.basePR = E.pixelRatio; r.setPixelRatio(E.pixelRatio);
   r.shadowMap.enabled = true;
   r.shadowMap.type = E.quality === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap;
   E.sun.shadow.mapSize.set(E.quality === 'high' ? 2048 : 1024, E.quality === 'high' ? 2048 : 1024);
@@ -147,13 +147,14 @@ export function render(dt) {
   if (E.composer) E.composer.render(dt); else E.renderer.render(E.scene, E.camera);
 }
 
-// auto step-down: FPS < 30 for 5 seconds on HIGH -> LOW
+// AUTO sharpness: only ever goes UP from the default (more pixels when the phone has spare speed), and only back down
+// to that default, never below it. Visual quality is never reduced automatically.
+let win = 0, winN = 0;
 export function trackFps(dt, now) {
-  if (!E.autoQ || E.quality !== 'high' || document.hidden) { E.lowSince = 0; return; }
-  E.fpsLog.push(dt); if (E.fpsLog.length > 30) E.fpsLog.shift();
-  if (E.fpsLog.length < 30) return;
-  const avg = E.fpsLog.reduce((a, b) => a + b, 0) / E.fpsLog.length;
-  const fps = 1 / avg;
-  if (fps < 30) { if (!E.lowSince) E.lowSince = now; else if (now - E.lowSince > 5000) { setQuality('low'); if (E.onAutoLow) E.onAutoLow(); } }
-  else E.lowSince = 0;
+  if (!E.autoQ || E.quality !== 'high' || document.hidden || dt <= 0) return;
+  win += dt; winN++; if (win < 4) return; const fps = winN / win; win = 0; winN = 0;
+  const maxPR = Math.min(window.devicePixelRatio || 1, 3); let pr = E.pixelRatio;
+  if (fps >= 57 && pr < maxPR - 0.01) pr = Math.min(maxPR, pr + 0.25); else if (fps < 46 && pr > E.basePR + 0.01) pr = Math.max(E.basePR, pr - 0.25);
+  if (pr !== E.pixelRatio) { E.pixelRatio = pr; E.renderer.setPixelRatio(pr); resize(); }
+  E.lastFps = fps;
 }

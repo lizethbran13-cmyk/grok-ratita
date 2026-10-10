@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { makeEnemy, animEnemy, makeCandy, animCandy, makeMartina, animMartina, makeBoss, animBoss, MB, toGroup } from './models.js';
 import { P } from './geo.js';
 import { sfx } from './audio.js';
+import { inView } from './perf.js';
 const ENEMY = { dust: { hp: 1, sp: 2.2, aggro: 7, r: 0.6 }, windup: { hp: 1, sp: 1.8, aggro: 6, r: 0.55 }, bot: { hp: 2, sp: 2.6, aggro: 8, r: 0.6 }, snail: { hp: 2, sp: 0.8, aggro: 4, r: 0.6 }, bee: { hp: 1, sp: 2.4, aggro: 8, r: 0.5, fly: true }, nut: { hp: 2, sp: 3.2, aggro: 8, r: 0.6 }, moth: { hp: 1, sp: 2.0, aggro: 8, r: 0.5, fly: true }, toycar: { hp: 2, sp: 4, aggro: 9, r: 0.7 } };
 export const BOSS = {
   toast: { n: 'Toastzilla', hp: 3, r: 2.8, h: 4.2, moves: ['lob', 'hop', 'lob'], proj: 0xd4a373, sp: 3 },
@@ -90,9 +91,9 @@ export class Actors {
     const e = this.list.find((q) => q.id === id); if (!e || e.dead) return false; e.hp -= dmg; e.flash = 0.25; if (e.hp <= 0) { e.dead = true; g.onEnemyKilled(e, from); } else g.net.fx('hit', e.x, e.y + 0.6, e.z); return true; }
   // ---------------- visuals ----------------
   render(dt) {
-    for (const e of this.list) { const r = e.rig.root; if (e.dead) { if (r.visible) { r.visible = false; this.g.fx.burst(e.x, e.y + 0.5, e.z, 0xffffff, 12); sfx('pop'); } continue; } r.visible = true; r.position.set(e.x, e.y, e.z); r.rotation.y = e.yaw; animEnemy(e.rig, dt, e.speed); const s = e.flash > 0 ? 1.25 : 1; e.rig.body.scale.multiplyScalar(1); r.scale.setScalar(s); }
-    const c = this.candy; if (c) { c.rig.root.position.set(c.x, 0, c.z); c.rig.root.rotation.y = c.yaw; animCandy(c.rig, dt, c.speed, c.st); }
-    const m = this.martina; if (m) { m.rig.root.position.set(m.x, m.y, m.z); m.rig.root.rotation.y = m.yaw; animMartina(m.rig, dt, m.speed); }
+    for (const e of this.list) { const r = e.rig.root; if (e.dead) { if (r.visible) { r.visible = false; this.g.fx.burst(e.x, e.y + 0.5, e.z, 0xffffff, 12); sfx('pop'); } continue; } r.visible = true; r.position.set(e.x, e.y, e.z); r.rotation.y = e.yaw; e.adt = (e.adt || 0) + dt; if (inView(e.x, e.y + 0.6, e.z, 1.6)) { animEnemy(e.rig, e.adt, e.speed); e.adt = 0; } const s = e.flash > 0 ? 1.25 : 1; e.rig.body.scale.multiplyScalar(1); r.scale.setScalar(s); }
+    const c = this.candy; if (c) { c.rig.root.position.set(c.x, 0, c.z); c.rig.root.rotation.y = c.yaw; c.adt = (c.adt || 0) + dt; if (inView(c.x, 1.5, c.z, 3.5)) { animCandy(c.rig, Math.min(0.1, c.adt), c.speed, c.st); c.adt = 0; } }
+    const m = this.martina; if (m) { m.rig.root.position.set(m.x, m.y, m.z); m.rig.root.rotation.y = m.yaw; m.adt = (m.adt || 0) + dt; if (inView(m.x, m.y + 1, m.z, 3)) { animMartina(m.rig, Math.min(0.1, m.adt), m.speed); m.adt = 0; } }
     const B = this.boss; if (B) { const r = B.rig.root; r.visible = !B.dead; r.position.set(B.x, B.y + (B.jumpT || 0), B.z); r.rotation.y = B.yaw; animBoss(B.rig, dt, B.st === 'move' && B.mv === 'hop' ? 'hop' : B.st); r.scale.setScalar(B.flash > 0 ? 1.08 : 1);
       if (!this.stars) { const b = MB(); for (let i = 0; i < 5; i++) b.l.add(P.sphere, 0xffe14d, Math.cos(i / 5 * 6.28) * 1.6, 0, Math.sin(i / 5 * 6.28) * 1.6, 0, 0, 0, 0.3, 0.3, 0.3, 0.8); this.stars = toGroup(b, false); this.group.add(this.stars); }
       this.stars.visible = B.st === 'tired' && !B.dead; if (this.stars.visible) { this.stars.position.set(B.x, B.y + B.D.h + 1, B.z); this.stars.rotation.y += dt * 3; } }

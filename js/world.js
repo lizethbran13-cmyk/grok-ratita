@@ -6,7 +6,7 @@ import { MATS } from './mats.js';
 
 const CH = 22, CELL = 8;
 const _m = new THREE.Matrix4(), _m2 = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), _n = new THREE.Matrix3();
-const prepCache = new WeakMap();
+const prepCache = new Map();
 function prep(geom) {
   let p = prepCache.get(geom); if (p) return p;
   let g = geom.clone();
@@ -17,6 +17,7 @@ function prep(geom) {
   prepCache.set(geom, g); return g;
 }
 const rbCache = new Map();
+export function clearWorldCaches() { for (const g of prepCache.values()) g.dispose(); prepCache.clear(); for (const g of rbCache.values()) g.dispose(); rbCache.clear(); }
 export function rbox(w, h, d, r, seg = 2) {
   r = Math.min(r, w / 2 - 0.001, h / 2 - 0.001, d / 2 - 0.001); if (r < 0.005) r = 0.005;
   const k = [w, h, d, r, seg].map((v) => +(+v).toFixed(3)).join(','); let g = rbCache.get(k);

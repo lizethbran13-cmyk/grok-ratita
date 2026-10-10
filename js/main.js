@@ -17,7 +17,7 @@ const app = window.__rr = { state: 'boot', paused: true, game: null, ready: fals
 function setLoad(p, t) { const b = $('loadBar'); if (b) b.style.width = p + '%'; if (t) $('loadTxt').textContent = t; }
 async function boot() {
   setLoad(15, 'Waking up the rats…');
-  initEngine($('c'), S.opts.quality); E.autoQ = S.opts.autoQ; E.onAutoLow = () => { app.hud.toast('⚡ Switched to LOW graphics to keep things smooth'); S.opts.quality = 'low'; persist(); };
+  initEngine($('c'), S.opts.quality); E.autoQ = S.opts.autoQ;
   await loadFont(); initMats(); initInput(); setSound(S.opts.sound, S.opts.music);
   app.hud = new HUD(); app.net = new Net(app);
   const unlock = () => { initAudio(); }; window.addEventListener('touchstart', unlock, { passive: true }); window.addEventListener('mousedown', unlock); window.addEventListener('keydown', unlock);
@@ -41,7 +41,7 @@ app.loadLevel = (id, broadcast, o = {}) => {
   $('loading').classList.remove('gone'); const L = LEVELS.find((l) => l.id === id); setLoad(30, L ? `${L.icon} Sneaking into the ${L.room}…` : '🏠 Back to Ratita HQ…');
   setTimeout(() => { if (app.game) app.game.dispose(); app.game = null;
     const g = new Game(app, id, { online, host, seed, pid: online ? net.room.pid : 'me', slot: online ? (net.room.me() || {}).slot || 0 : 0 }); g.world.title = L ? `${L.icon} ${L.room}` : '🏠 Ratita HQ';
-    app.game = g; g.hud.startLevel(g); app.state = 'play'; app.paused = false; showTouch(true); closePanel(); clearEdges(); setLoad(100); setTimeout(() => $('loading').classList.add('gone'), 120); S.stats.plays++; persist(); }, 60);
+    app.game = g; try { E.renderer.compile(E.scene, E.camera); } catch (e) {} g.hud.startLevel(g); app.state = 'play'; app.paused = false; showTouch(true); closePanel(); clearEdges(); setLoad(100); setTimeout(() => $('loading').classList.add('gone'), 120); S.stats.plays++; persist(); }, 60);
 };
 app.enterLevelDoor = (id) => { const L = LEVELS.find((l) => l.id === id); const i = LEVELS.indexOf(L); const un = i === 0 || S.done[LEVELS[i - 1].id] || S.cheat; if (!un) { sfx('deny'); app.hud.toast(`🔒 Beat the ${LEVELS[i - 1].room} first!`); return; }
   if (app.net.online && !app.net.room.isHost) { app.hud.toast('The host picks the room 🐀'); return; } app.paused = true; UI.confirmDoor(app, L); };

@@ -134,7 +134,7 @@ BUILD.garden = (w) => {
   w.add('e', rbox(20, 0.5, 13, 0.25), 0x38bdf8, 14, 0.15, 14); w.add('m', rbox(21, 0.25, 14, 0.3), 0x0e7490, 14, 0.02, 14); w.water(4.2, -1, 7.7, 23.8, 0.6, 20.3);
   [[6.5, 16], [10, 12], [14, 16.5], [18, 12], [21.5, 15.5]].forEach(([x, z], i) => { P(w, x, 0.7, z, 2.8, 2.8, 0x22c55e, 0.4); w.add('g', sph(10), 0xf472b6, x + 0.6, 0.85, z + 0.4, 0, 0, 0, 0.3, 0.2, 0.3); w.crumb(x, 0.7, z); });
   for (let i = 0; i < 14; i++) { const a = i / 14 * PI * 2; PR.rock(w, 14 + Math.cos(a) * 11, 0, 14 + Math.sin(a) * 7.6, 1.6 + (i % 3) * 0.5); }
-  PR.rock(w, 14, 0, 14, 3.4, 0xa8a29e); w.cheese(14, 2.9, 14);
+  PR.rock(w, 14, 0, 14, 3.4, 0xa8a29e); w.cheese(14, 3.7, 14);
   // tree with branch platforms + hooks
   w.add('m', cyl(24), 0x8b5a2b, -32, 0, -22, 0, 0, 0, 3.4, 26, 3.4); w.solid(-35, 0, -25, -29, 26, -19);
   [[-32, 9, -15.5, 0], [-25.5, 15, -22, PI / 2], [-32, 21, -28.5, 0]].forEach(([x, y, z, r]) => { w.add('m', rbox(6, 1.2, 6, 0.5), 0x7c4a22, x, y - 0.6, z); w.solid(x - 3, y - 1.2, z - 3, x + 3, y, z + 3); w.add('g', blobGeo(((x + y) | 0) + 40, 0.15, 2), 0x3fae5a, x + (r ? 2 : 0), y + 3.5, z + (r ? 0 : 2), 0, r, 0, 3, 2, 3); });
@@ -146,7 +146,7 @@ BUILD.garden = (w) => {
   w.slab('m', 0x8b5a2b, 28, 0, -32, 14, 12, 1, 0.1); w.slab('m', 0x9a6a3e, 21.5, 0, -27, 1, 12, 9, 0.1); w.slab('m', 0x9a6a3e, 34.5, 0, -27, 1, 12, 9, 0.1);
   w.slab('m', 0x9a6a3e, 24, 0, -22.5, 4, 12, 1, 0.1); w.slab('m', 0x9a6a3e, 32, 0, -22.5, 4, 12, 1, 0.1); w.slab('m', 0x9a6a3e, 28, 7, -22.5, 4, 5, 1, 0.1);
   w.add('m', rbox(16, 0.8, 12, 0.2), 0xb91c1c, 28, 12.4, -27, 0, 0, 0.0); w.solid(20, 12, -33, 36, 12.8, -21);
-  w.door('shed', 28, 0, -22.5, 4, 7, 1, ['p1'], 0x22c55e, '🐢 Martina opened the shed!'); P(w, 28, 3, -31.4, 10, 1.6, 0xd4a373, 0.4); w.baby(28, 3, -31.3); PR.paintCan(w, 24, 0, -29, 0x22c55e); PR.paintCan(w, 32, 0, -29, 0xffd23f); w.part(32, 2.25, -29);
+  w.door('shed', 28, 0, -22.5, 4, 7, 1, ['p1'], 0x22c55e, '🐢 Martina opened the shed!'); P(w, 28, 3, -30.6, 10, 1.6, 0xd4a373, 0.4); w.baby(28, 3, -30.5); PR.paintCan(w, 24, 0, -29, 0x22c55e); PR.paintCan(w, 32, 0, -29, 0xffd23f); w.part(32, 2.25, -29);
   w.martinaSpec = { x: 14, z: -10, yaw: 0, path: [[16, -14], [22, -16]] }; w.plate('p1', 22, 0, -16, 1.5);
   w.hint(8, -22, 36, -8, '🐢 Martina can hold down the green button to open the shed!', -1, 8);
   PR.gnome(w, 10, -20, 0.6, 1.4); PR.gnome(w, 37, -14, -0.8, 1.2); PR.flowerPot(w, 38, -4, 1.2, 0x3b82f6, true); w.part(38, 6, -4);
@@ -214,7 +214,7 @@ BUILD.toyroom = (w) => {
   [[-22, 0, 14, 2.2], [-19.6, 0, 12, 2.2], [-19.6, 2.2, 12, 2.2], [-17.2, 0, 9.6, 2.2], [-17.2, 2.2, 9.6, 2.2], [-17.2, 4.4, 9.6, 2]].forEach(([x, y, z, s], i) => PR.toyBlock(w, x, y, z, s, i * 0.3));
   w.crumbLine(-24, 0, 18, -22, 2.2, 14, 3); w.crumbLine(-19.6, 4.4, 12, -17.2, 6.4, 9.6, 3); w.enemy('windup', -14, 0, 16, { axis: 'x', range: 4 });
   // bed (bounce) + headboard shelf
-  PR.bed(w, -18, -8, 0, 0x60a5fa, 0xfef3c7); w.crumbArc(-20, 5, -2, -16, 5, -14, 4, 6); w.cheese(-12, 7.7, -4); w.part(-23, 5, -16);
+  PR.bed(w, -18, -8, 0, 0x60a5fa, 0xfef3c7); w.crumbArc(-20, 5, -2, -16, 5, -14, 4, 6); w.cheese(-12, 5.4, -4); w.part(-23, 5, -16);
   PR.teddy(w, -14, 4.4, -16, 0.3, 1.2); w.cp(-24, 0, 4, PI);
   shelf(w, -8, 14, -25, 12, 4, 0xf9a8d4); w.crumbLine(-13, 14, -24, -3, 14, -24, 5); w.baby(-4, 14, -24.5); PR.toyBlock(w, -12, 14, -25, 1.2); PR.toyBlock(w, -10.6, 14, -25, 1.2, 0.4);
   w.hint(-28, -21, -8, 4, '🛏️ Bounce high on the bed to reach the pink shelf!', -1, 30);

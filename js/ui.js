@@ -29,7 +29,7 @@ export const UI = {
       <p>👊 Bosses get dizzy after attacking ⭐. Hit them while they're dizzy!</p><p>🐶 Candy loves rats a little <i>too</i> much. Stay off the floor when she's awake!</p>
       <p>🎯 Each room: 3 baby Ratitas 🐭, 5 gadget parts ⚙️, lots of cheese 🧀 and a Golden Cheese at the end.</p></div><button class="go" id="hBack">GOT IT!</button>`, (c) => { c.querySelector('#hBack').onclick = () => { S.seenHow = true; persist(); back(); }; }); },
   options(app, back) { const o = S.opts; const seg = (id, opts, v) => `<div class="seg" id="${id}">${opts.map(([k, l]) => `<button data-v="${k}" class="${String(v) === String(k) ? 'on' : ''}">${l}</button>`).join('')}</div>`;
-    panel(`<h2>⚙️ OPTIONS</h2><h3>GRAPHICS</h3>${seg('oQ', [['high', '✨ HIGH'], ['low', '⚡ LOW']], o.quality)}<h3>AUTO STEP-DOWN IF IT LAGS</h3>${seg('oA', [['1', 'ON'], ['0', 'OFF']], o.autoQ ? 1 : 0)}
+    panel(`<h2>⚙️ OPTIONS</h2><h3>GRAPHICS</h3>${seg('oQ', [['high', '✨ HIGH'], ['low', '⚡ LOW']], o.quality)}<h3>AUTO SHARPEN (extra detail when smooth)</h3>${seg('oA', [['1', 'ON'], ['0', 'OFF']], o.autoQ ? 1 : 0)}
       <h3>SOUND</h3>${seg('oS', [['1', 'ON'], ['0', 'OFF']], o.sound ? 1 : 0)}<h3>MUSIC</h3>${seg('oM', [['1', 'ON'], ['0', 'OFF']], o.music ? 1 : 0)}<h3>CAMERA SPEED</h3>${seg('oC', [['0.6', 'SLOW'], ['1', 'NORMAL'], ['1.5', 'FAST']], o.camSens)}
       <h3>LOOK LEFT/RIGHT</h3>${seg('oI', [['0', 'NORMAL'], ['1', 'FLIPPED']], o.invertX ? 1 : 0)}<button class="go" id="oBack">DONE</button><button class="mbtn2 sm danger" id="oReset">Reset save</button>`, (c) => {
       const bs = (id, f) => c.querySelectorAll('#' + id + ' button').forEach((b) => b.onclick = () => { sfx('click'); f(b.dataset.v); persist(); UI.options(app, back); });

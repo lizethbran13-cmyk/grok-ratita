@@ -1,7 +1,7 @@
 // Level runtime: builds a room, runs players/actors/pickups/doors/movers, camera, and co-op sync hooks.
 import * as THREE from 'three';
 import { E, setEnvironment, followShadow } from './engine.js';
-import { World } from './world.js';
+import { World, clearWorldCaches } from './world.js';
 import { buildLevel } from './levels.js';
 import './levels2.js';
 import { Player } from './player.js';
@@ -9,6 +9,7 @@ import { Actors } from './actors.js';
 import { FX } from './fx.js';
 import { pickupGeos, makeBaby, makeCheckpoint, makeHook, makeShot, animRat } from './models.js';
 import { MATS } from './mats.js';
+import { updateFrustum, LightPool, disposeDeep } from './perf.js';
 import { sfx, playMusic } from './audio.js';
 import { S, persist, up } from './save.js';
 import { LEVELS, gadgetsFor } from './data.js';
@@ -33,7 +34,10 @@ export class Game {
     playMusic(w.music || levelId); this.hud.startLevel(this);
   }
   applyFog() { const f = this.world.env; if (this.scene.fog) { this.scene.fog.color.set(f.fog); this.scene.fog.density = f.fogD || 0.004; } }
-  dispose() { this.world.dispose(this.scene); this.actors.dispose(); this.scene.remove(this.fx.mesh); this.fx.rings.forEach((r) => this.scene.remove(r.m)); for (const p of this.players.values()) p.removeFrom(this.scene); this.extra.forEach((o) => this.scene.remove(o)); this.lightsAdded.forEach((l) => this.scene.remove(l)); }
+  dispose() { this.world.dispose(this.scene); disposeDeep(this.world.group); this.actors.dispose(); disposeDeep(this.actors.group); this.scene.remove(this.fx.mesh); this.fx.rings.forEach((r) => this.scene.remove(r.m));
+    for (const p of this.players.values()) { p.removeFrom(this.scene); disposeDeep(p.root); } this.extra.forEach((o) => { this.scene.remove(o); disposeDeep(o); }); if (this.lightPool) this.lightPool.dispose(this.scene);
+    for (const k in this.inst || {}) { const im = this.inst[k].im; this.scene.remove(im); im.dispose && im.dispose(); }
+    clearWorldCaches(); E.renderer.renderLists.dispose(); }
   buildPickups() {
     const w = this.world; this.extra = []; this.inst = {};
     for (const k of ['crumb', 'cheese', 'part', 'heart']) { const list = w.ents.filter((e) => e.k === k); if (!list.length) continue; const mat = k === 'part' ? MATS.g : k === 'heart' ? MATS.g : MATS.g;
@@ -45,7 +49,7 @@ export class Game {
     if (w.goldPos) { const g = new THREE.Mesh(PG.gold, MATS.x); g.castShadow = true; g.position.set(...w.goldPos); g.visible = !w.bossSpec; this.scene.add(g); this.extra.push(g); this.gold = g; const halo = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.18, depthWrite: false, toneMapped: false })); g.add(halo); }
     this.shotGeo = makeShot();
   }
-  buildLights() { this.lightsAdded = []; const ls = this.world.lights.slice(0, 4); for (const l of ls) { const p = new THREE.PointLight(l.c, l.i || 30, l.d || 30, 1.6); p.position.set(l.x, l.y, l.z); this.scene.add(p); this.lightsAdded.push(p); } }
+  buildLights() { this.lightPool = new LightPool(this.scene, this.world.lights, 4); this.lightsAdded = []; }
   alivePlayers() { const a = []; for (const p of this.players.values()) if (p.respawnT <= 0) a.push(p); return a; }
   toastMsg(m) { this.hud.toast(m); }
   // ------------------------------------------------ frame
@@ -78,11 +82,12 @@ export class Game {
     for (const p of this.players.values()) if (!p.local) { p.remoteUpdate(dt); p.updateBlob(w); }
     // actors
     if (this.host) this.actors.step(dt); else this.actors.lerpRemote(dt);
-    this.actors.render(dt);
+    updateFrustum(E.camera); this.actors.render(dt);
     if (this.host) this.hostLogic(dt);
     this.animPickups(dt);
     this.net.tick && this.net.tick(dt, this);
     this.updateCam(dt); this.render(dt); this.hud.update(dt, this);
+    if (this.lightPool) this.lightPool.update(dt, me.x, me.y + 2, me.z);
   }
   // big friendly actors (Martina, Candy) vanish while they sit between the camera and your rat
   hideOccluders(cp, tg) { const A = this.actors; for (const [o, r] of [[A.martina, 2.6], [A.candy, 2.4]]) { if (!o || !o.rig) continue; const R = o.rig.root; const px = o.x, py = o.y + r * 0.5, pz = o.z;
