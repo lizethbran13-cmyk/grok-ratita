@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ff4fa0">
+<title>Grok Ratita Rescue</title>
+<link rel="stylesheet" href="style.css?v=DEV">
+<script type="importmap">
+{ "imports": { "three": "./lib/three.module.min.js", "three/addons/": "./lib/addons/" } }
+</script>
+<script src="lib/peerjs.min.js"></script>
+<script src="lib/grok-net.js"></script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud" class="hidden">
+  <div id="hTL"><div id="hHearts"></div><div id="hLevel"></div><div id="hPlayers"></div></div>
+  <div id="hTR"><div class="chip">🧀 <b id="hCheese">0</b></div><div id="hStats"><div class="chip">🐭 <b id="hBabies">0/3</b></div><div class="chip">⚙️ <b id="hParts">0/5</b></div></div></div>
+  <button id="hPause" aria-label="pause">II</button>
+  <div id="hBoss" class="hidden"><b id="hBossN"></b><div class="bar"><i id="hBossF"></i></div><small>Hit it while it's dizzy ⭐</small></div>
+  <div id="hHint"></div>
+</div>
+<div id="touch" class="hidden">
+  <div id="touchZone"></div><div id="stickRing"></div><div id="stickKnob"></div>
+  <button class="tb" id="tJump" data-b="jump">JUMP</button>
+  <button class="tb" id="tSpin" data-b="spin">🌀<small>SPIN</small></button>
+  <button class="tb" id="tBlast" data-b="blast">🧀<small>BLAST</small></button>
+  <button class="tb hidden" id="tHook" data-b="hook">🪝<small>HOOK</small></button>
+  <button class="hidden" id="tAct" data-b="act"></button>
+</div>
+<div id="ui"></div>
+<div id="toast"></div>
+<div id="loading"><div class="lg">GROK<br><span>RATITA RESCUE</span></div><div class="bar"><i id="loadBar"></i></div><p id="loadTxt">Loading…</p></div>
+<script type="module" src="js/main.js?v=DEV"></script>
+</body>
+</html>
