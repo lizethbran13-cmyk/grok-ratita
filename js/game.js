@@ -190,11 +190,18 @@ export class Game {
     if (!manual && me.speed > 1 && !me.zip) { let d = me.yaw - c.yaw; while (d > PI) d -= PI * 2; while (d < -PI) d += PI * 2; if (Math.abs(d) < 2.2) c.yaw += d * Math.min(1, dt * 0.9 * (me.speed / 7)); }
     const B = this.actors.boss; const bossOn = B && B.active && !B.dead; const want = bossOn ? 9.5 : (this.world.camDist || 6.6);
     c.dist += (want - c.dist) * Math.min(1, dt * 2);
-    const ty = me.y + 1.0 + Math.min(0, me.vy) * 0.02; c.tgt.set(me.x, c.snap ? ty : c.tgt.y + (ty - c.tgt.y) * Math.min(1, dt * (me.onGround ? 8 : 3)), me.z);
+    const ty = me.y + 1.0 + Math.min(0, me.vy) * 0.02; c.tgt.set(me.x, c.snap ? ty : c.tgt.y + (ty - c.tgt.y) * (1 - Math.exp(-dt * (me.onGround ? 6 : 3))), me.z);
     const dir = new THREE.Vector3(-Math.sin(c.yaw) * Math.cos(c.pitch), Math.sin(c.pitch), -Math.cos(c.yaw) * Math.cos(c.pitch));
-    let d = this.world.ray(c.tgt, dir, c.dist + 0.3, (s) => s.cam !== false && !s.off && !s.nocam); d = Math.max(1.0, Math.min(c.dist, d - 0.35));
-    const want3 = c.tgt.clone().addScaledVector(dir, d);
-    if (c.snap) { c.pos.copy(want3); c.snap = false; } else { c.pos.lerp(want3, Math.min(1, dt * 10)); const cur = c.pos.distanceTo(c.tgt); if (cur > d + 0.05) c.pos.copy(c.tgt).addScaledVector(c.pos.clone().sub(c.tgt).normalize(), d); }
+    // camera collision: ignore floors and small clutter (only big things pull the camera in), smoothed with hysteresis so it never snaps
+    const big = (q) => q.cam !== false && !q.off && !q.nocam && !q.floor && (q.max[1] - q.min[1]) > 1.2 && Math.max(q.max[0] - q.min[0], q.max[2] - q.min[2]) > 1.6;
+    let d = this.world.ray(c.tgt, dir, c.dist + 0.5, big); d = Math.max(1.2, Math.min(c.dist, d - 0.45));
+    if (c.cd == null || c.snap) c.cd = d;
+    else if (d < c.cd - 0.05) c.cd += (d - c.cd) * Math.min(1, dt * 9); // pull in quickly but smoothly
+    else if (d > c.cd + 0.35) c.cd += (d - c.cd) * Math.min(1, dt * 2.2); // ease back out slowly, only once clearly free
+    const want3 = c.tgt.clone().addScaledVector(dir, c.cd);
+    // stay above the floor / rugs / low clutter under the camera
+    const gy = this.world.ground(want3.x, want3.z, want3.y + 0.5, 0.3).y; const minY = (gy > -1e8 ? gy : me.y) + 0.7; if (want3.y < minY) want3.y = minY;
+    if (c.snap) { c.pos.copy(want3); c.snap = false; } else { const kx = 1 - Math.exp(-dt * 14), ky = 1 - Math.exp(-dt * 8); c.pos.x += (want3.x - c.pos.x) * kx; c.pos.z += (want3.z - c.pos.z) * kx; c.pos.y += (want3.y - c.pos.y) * ky; }
     cam.position.copy(c.pos); if (c.shake > 0) { c.shake -= dt; cam.position.x += (Math.random() - 0.5) * c.shake; cam.position.y += (Math.random() - 0.5) * c.shake; }
     cam.lookAt(c.tgt.x, c.tgt.y + 0.2, c.tgt.z); this.hideOccluders(cam.position, c.tgt); this.hideStatic(cam.position, c.tgt); const fov = E.baseFov + (bossOn ? 4 : 0); if (Math.abs(cam.fov - fov) > 0.1) { cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix(); }
   }

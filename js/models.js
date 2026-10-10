@@ -126,22 +126,44 @@ export function animCandy(r, dt, speed, mode) {
 // ---------------------------------------------------------------- Martina the desert tortoise
 export function makeMartina() {
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
-  const b = MB(); const sh = 0x9a6b3c, sc = 0xc79a5b, skin = 0xb6a07a;
-  b.g.add(lathe([[0, 1.4], [1.0, 1.35], [1.8, 1.0], [2.2, 0.45], [2.3, 0.15], [0, 0.15]], 40, 'shell'), sh, 0, 0.15, 0, 0, 0, 0, 1, 1, 1.2);
-  // scutes as real raised bumps
-  b.g.add(P.sphere, sc, 0, 1.45, 0, 0, 0, 0, 0.75, 0.18, 0.85); for (let i = 0; i < 6; i++) { const a = i / 6 * PI * 2; b.g.add(P.sphere, sc, Math.cos(a) * 1.25, 1.15, Math.sin(a) * 1.45, -Math.sin(a) * 0.5, 0, Math.cos(a) * 0.5, 0.55, 0.18, 0.6); }
-  for (let i = 0; i < 12; i++) { const a = i / 12 * PI * 2; b.g.add(P.sphere, 0x7a512b, Math.cos(a) * 2.05, 0.5, Math.sin(a) * 2.45, 0, -a, 0, 0.4, 0.22, 0.25); }
-  b.m.add(P.sphere, 0xd8c08d, 0, 0.25, 0, 0, 0, 0, 2.1, 0.18, 2.5);
+  const b = MB(); const groove = 0x6e4524, sc = 0xb98545, scL = 0xd1a05e, skin = 0xb8a27c, skinD = 0x9c8763, belly = 0xe2c992;
+  // domed shell = half-ellipsoid (lathe profile ordered bottom->top so faces point outward), rim at y0, sits on the body
+  const A = 2.3, B = 1.85, Cz = 2.65, Y0 = 0.55, prof = [[0, 0]]; for (let k = 0; k <= 16; k++) { const th = PI / 2 - k / 16 * PI / 2; prof.push([Math.max(0.0001, A * Math.sin(th)), B * Math.cos(th)]); }
+  prof[prof.length - 1][0] = 0;
+  b.g.add(lathe(prof, 48, 'martinaDome2'), groove, 0, Y0, 0, 0, 0, 0, 1, 1, Cz / A);
+  // scutes: flattened smooth plates sitting ON the dome, aligned to the surface normal
+  const _n = new THREE.Vector3(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), up = new THREE.Vector3(0, 1, 0);
+  const scute = (th, ph, r, col) => { const sx = A * Math.sin(th) * Math.cos(ph), sy = B * Math.cos(th), sz = Cz * Math.sin(th) * Math.sin(ph);
+    _n.set(sx / (A * A), sy / (B * B), sz / (Cz * Cz)).normalize(); _q.setFromUnitVectors(up, _n); _e.setFromQuaternion(_q, 'XYZ');
+    b.g.add(P.sphere, col, sx + _n.x * 0.02, Y0 + sy + _n.y * 0.02, sz + _n.z * 0.02, _e.x, _e.y, _e.z, r, 0.13, r * 1.05); };
+  scute(0, 0, 0.78, scL);
+  for (let i = 0; i < 6; i++) scute(0.66, i / 6 * PI * 2 + PI / 6, 0.74, i % 2 ? sc : scL);
+  for (let i = 0; i < 12; i++) scute(1.17, i / 12 * PI * 2, 0.58, i % 2 ? scL : sc);
+  // rim band of marginal plates + flat belly plate underneath
+  for (let i = 0; i < 18; i++) { const a = i / 18 * PI * 2; b.g.add(P.sphere, i % 2 ? sc : groove, Math.cos(a) * A * 0.99, Y0 + 0.08, Math.sin(a) * Cz * 0.99, 0, -a, 0, 0.42, 0.14, 0.3); }
+  b.m.add(P.sphere, belly, 0, Y0 - 0.02, 0, 0, 0, 0, A * 0.97, 0.16, Cz * 0.97);
+  // soft skin body tucked under the shell so there is no hollow gap
+  b.f.add(P.sphere, skin, 0, Y0 - 0.12, 0, 0, 0, 0, A * 0.85, 0.42, Cz * 0.85);
+  // little pointy tail
+  b.f.add(P.capsule, skin, 0, 0.42, -Cz - 0.05, -PI / 2 - 0.5, 0, 0, 0.22, 0.45, 0.22);
   body.add(toGroup(b));
-  const head = new THREE.Group(); head.position.set(0, 0.8, 2.6); body.add(head); { const h = MB(); h.f.add(P.capsule, skin, 0, -0.1, -0.5, PI / 2, 0, 0, 0.6, 0.9, 0.6); h.f.add(P.sphere, skin, 0, 0.15, 0.25, 0, 0, 0, 0.55, 0.5, 0.65); h.g.add(P.torus, 0x6b5a3a, 0, -0.02, 0.75, 0, 0, PI, 0.25, 0.12, 0.1); eyes(h, 0.32, 0.55, 0.24, 0.13, { iris: 0x3b2410 }); h.g.add(P.sphere, 0xff9fbf, 0.38, 0.08, 0.6, 0, 0, 0, 0.1, 0.06, 0.05); h.g.add(P.sphere, 0xff9fbf, -0.38, 0.08, 0.6, 0, 0, 0, 0.1, 0.06, 0.05);
-    // little flower behind ear
-    for (let i = 0; i < 5; i++) h.g.add(P.sphere, 0xff6fcf, 0.45 + Math.cos(i * 1.26) * 0.12, 0.55 + Math.sin(i * 1.26) * 0.12, 0.1, 0, 0, 0, 0.09, 0.09, 0.04); h.g.add(P.sphere, 0xffd23f, 0.45, 0.55, 0.13, 0, 0, 0, 0.06); head.add(toGroup(h)); }
-  const legs = []; const lb = MB(); lb.f.add(P.capsule, skin, 0, -0.25, 0, 0, 0, 0, 0.55, 0.5, 0.55); for (let i = -1; i <= 1; i++) lb.g.add(P.sphere, 0xf5f0e0, i * 0.15, -0.55, 0.22, 0, 0, 0, 0.07, 0.05, 0.08); const lg = toGroup(lb);
-  [[-1.6, 1.5], [1.6, 1.5], [-1.6, -1.5], [1.6, -1.5]].forEach(([x, z]) => { const p = new THREE.Group(); p.position.set(x, 0.6, z); p.add(lg.clone()); body.add(p); legs.push(p); });
+  // head on a neck that comes out of the front of the shell
+  const head = new THREE.Group(); head.position.set(0, 0.62, 2.55); body.add(head);
+  { const h = MB(); h.f.add(P.capsule, skin, 0, 0.05, 0.05, PI / 2 - 0.35, 0, 0, 0.55, 0.8, 0.55);
+    h.f.add(P.sphere, skin, 0, 0.42, 0.72, 0, 0, 0, 0.62, 0.55, 0.7); h.f.add(P.sphere, skinD, 0, 0.3, 1.25, 0, 0, 0, 0.32, 0.22, 0.2);
+    h.g.add(torus(0.18, 16, PI), 0x4a3a24, 0, 0.24, 1.3, 0, 0, PI, 0.18, 0.12, 0.1);
+    eyes(h, 0.62, 1.1, 0.3, 0.16, { iris: 0x3b2410 });
+    h.g.add(P.sphere, 0xff9fbf, 0.42, 0.38, 1.18, 0, 0, 0, 0.11, 0.07, 0.05); h.g.add(P.sphere, 0xff9fbf, -0.42, 0.38, 1.18, 0, 0, 0, 0.11, 0.07, 0.05);
+    for (let i = 0; i < 5; i++) h.g.add(P.sphere, 0xff6fcf, 0.5 + Math.cos(i * 1.26) * 0.12, 0.92 + Math.sin(i * 1.26) * 0.12, 0.55, 0, 0, 0, 0.09, 0.09, 0.05); h.g.add(P.sphere, 0xffd23f, 0.5, 0.92, 0.6, 0, 0, 0, 0.06);
+    head.add(toGroup(h)); }
+  // four stubby elephant-style legs with toenails, peeking out from under the rim
+  const legs = []; const lb = MB(); lb.f.add(P.capsule, skin, 0, -0.2, 0, 0, 0, 0, 0.62, 0.55, 0.62); lb.f.add(P.sphere, skinD, 0, -0.62, 0.05, 0, 0, 0, 0.42, 0.14, 0.46);
+  for (let i = -1; i <= 1; i++) lb.g.add(P.sphere, 0xf5f0e0, i * 0.17, -0.6, 0.4, 0, 0, 0, 0.08, 0.06, 0.09); const lg = toGroup(lb);
+  [[-1.55, 1.55], [1.55, 1.55], [-1.55, -1.55], [1.55, -1.55]].forEach(([x, z]) => { const p = new THREE.Group(); p.position.set(x, 0.68, z); p.add(lg.clone()); body.add(p); legs.push(p); });
   root.scale.setScalar(0.9);
   return { root, body, head, legs, t: 0 };
 }
-export function animMartina(r, dt, speed) { r.t += dt; const run = Math.min(1, speed / 2); r.legs.forEach((l, i) => { l.rotation.x = Math.sin(r.t * 4 + (i === 0 || i === 3 ? 0 : PI)) * 0.4 * run; }); r.body.position.y = 0.1 + Math.abs(Math.sin(r.t * 4)) * 0.04 * run; r.head.rotation.y = Math.sin(r.t * 0.6) * 0.25; r.head.position.z = 2.6 + Math.sin(r.t * 1.3) * 0.08; }
+export function animMartina(r, dt, speed) { r.t += dt; const run = Math.min(1, speed / 2); r.legs.forEach((l, i) => { l.rotation.x = Math.sin(r.t * 4 + (i === 0 || i === 3 ? 0 : PI)) * 0.4 * run; }); r.body.position.y = Math.abs(Math.sin(r.t * 4)) * 0.04 * run; r.head.rotation.y = Math.sin(r.t * 0.6) * 0.25; r.head.position.z = 2.55 + Math.sin(r.t * 1.3) * 0.08; }
 // ---------------------------------------------------------------- baby ratitas in bubbles
 export function makeBaby(i) { const ids = ['luna', 'pirat', 'snowie']; const r = makeRat(ids[i % 3]); r.root.scale.setScalar(0.5); r.blaster.visible = false; const g = new THREE.Group(); g.add(r.root); r.root.position.y = -0.3;
   const bub = new THREE.Mesh(new THREE.SphereGeometry(0.75, 32, 20), new THREE.MeshPhysicalMaterial({ color: 0xbff4ff, roughness: 0.02, transparent: true, opacity: 0.28, clearcoat: 1, iridescence: 1, iridescenceIOR: 1.6, depthWrite: false })); bub.renderOrder = 3; g.add(bub);

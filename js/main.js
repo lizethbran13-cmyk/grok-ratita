@@ -21,7 +21,8 @@ async function boot() {
   await loadFont(); initMats(); initInput(); setSound(S.opts.sound, S.opts.music);
   app.hud = new HUD(); app.net = new Net(app);
   const unlock = () => { initAudio(); }; window.addEventListener('touchstart', unlock, { passive: true }); window.addEventListener('mousedown', unlock); window.addEventListener('keydown', unlock);
-  $('hPause').addEventListener('click', () => { sfx('click'); app.pause(); });
+  { const pb = $('hPause'); let tT = 0; const hit = (e) => { e.preventDefault(); e.stopPropagation(); if (performance.now() - tT < 350) return; tT = performance.now(); sfx('click'); if (app.paused && app.state === 'play') app.resume(); else app.pause(); };
+    pb.addEventListener('touchstart', hit, { passive: false }); pb.addEventListener('click', hit); }
   await new Promise((r) => setTimeout(r, 30)); setLoad(55, 'Building Ratita HQ…');
   app.game = new Game(app, 'hq', {}); setLoad(100, 'Ready!');
   app.state = 'title'; app.paused = true; showTouch(false); UI.title(app);

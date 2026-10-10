@@ -98,6 +98,7 @@ export class Player {
   }
   hurt(game, src, kind) {
     if (this.hurtT > 0 || this.respawnT > 0 || this.zip) return false;
+    if (game.app && game.app.paused && kind !== 'fall') return false; // co-op: the world keeps going for friends, but you can't get hurt while your pause menu is open
     if (kind !== 'fall' && this.gadgets.has('shield') && this.shield >= 1) { this.shield = 0; this.shieldCd = 8; this.hurtT = 1.0; sfx('pop'); game.fx.burst(this.x, this.y + 0.4, this.z, 0x9ff3ff, 14); this.knock(src); return true; }
     this.hearts--; this.hurtT = 1.5; sfx('hurt'); game.fx.burst(this.x, this.y + 0.4, this.z, 0xff6fb5, 10);
     if (kind === 'hot') { this.vy = 11; this.onGround = false; game.toastMsg('Ouch, hot! 🔥'); } else this.knock(src);
