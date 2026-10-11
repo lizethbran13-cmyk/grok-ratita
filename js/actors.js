@@ -4,7 +4,7 @@ import { makeEnemy, animEnemy, makeCandy, animCandy, makeMartina, animMartina, m
 import { P } from './geo.js';
 import { sfx } from './audio.js';
 import { inView } from './perf.js';
-const ENEMY = { dust: { hp: 1, sp: 2.2, aggro: 7, r: 0.6 }, windup: { hp: 1, sp: 1.8, aggro: 6, r: 0.55 }, bot: { hp: 2, sp: 2.6, aggro: 8, r: 0.6 }, snail: { hp: 2, sp: 0.8, aggro: 4, r: 0.6 }, bee: { hp: 1, sp: 2.4, aggro: 8, r: 0.5, fly: true }, nut: { hp: 2, sp: 3.2, aggro: 8, r: 0.6 }, moth: { hp: 1, sp: 2.0, aggro: 8, r: 0.5, fly: true }, toycar: { hp: 2, sp: 4, aggro: 9, r: 0.7 } };
+export const ENEMY = { dust: { hp: 1, sp: 2.2, aggro: 7, r: 0.6 }, windup: { hp: 1, sp: 1.8, aggro: 6, r: 0.55 }, bot: { hp: 2, sp: 2.6, aggro: 8, r: 0.6 }, snail: { hp: 2, sp: 0.8, aggro: 4, r: 0.6 }, bee: { hp: 1, sp: 2.4, aggro: 8, r: 0.5, fly: true }, nut: { hp: 2, sp: 3.2, aggro: 8, r: 0.6 }, moth: { hp: 1, sp: 2.0, aggro: 8, r: 0.5, fly: true }, toycar: { hp: 2, sp: 4, aggro: 9, r: 0.7 } };
 export const BOSS = {
   toast: { n: 'Toastzilla', hp: 3, r: 2.8, h: 4.2, moves: ['lob', 'hop', 'lob'], proj: 0xd4a373, sp: 3 },
   vac: { n: 'Sucky the Robo-Vac', hp: 3, r: 3.2, h: 2, moves: ['charge', 'charge', 'lob'], proj: 0x9aa0ab, sp: 3 },
@@ -27,7 +27,7 @@ export class Actors {
   addEnemy(type, x, y, z, o = {}) { const D = ENEMY[type] || ENEMY.dust; const m = makeEnemy(type); this.group.add(m.root);
     const e = { id: this.nid++, kind: 'e', type, x, y, z, hx: x, hz: z, hy: y, yaw: Math.random() * 6, hp: D.hp, D, rig: m, st: 'patrol', t: Math.random() * 5, range: o.range || 4, axis: o.axis || null, dead: false, flash: 0, speed: 0 }; this.list.push(e); return e; }
   addCandy(c) { const r = makeCandy(); this.group.add(r.root); this.candy = { kind: 'candy', x: c.x, y: 0, z: c.z, yaw: c.yaw || 0, rig: r, st: c.sleep ? 'sleep' : 'roam', path: c.path || [[c.x, c.z]], pi: 0, t: 0, speed: 0, home: [c.x, c.z], bounds: c.bounds, maxY: c.maxY || 1.6, barkT: 0 }; }
-  addMartina(m) { const r = makeMartina(); this.group.add(r.root); this.martina = { kind: 'martina', x: m.x, y: m.y || 0, z: m.z, yaw: m.yaw || 0, rig: r, st: 'idle', path: m.path || [], pi: 0, speed: 0, plate: m.plate, say: m.say || 'Hi friend! Need a hand?', done: false }; }
+  addMartina(m) { const r = makeMartina(); this.group.add(r.root); this.martina = { kind: 'martina', x: m.x, y: m.y || 0, z: m.z, yaw: m.yaw || 0, rig: r, st: 'idle', path: m.path || [], pi: 0, speed: 0, plate: m.plate, say: m.say || 'Hi friend! Need a hand?', done: false, name: m.name || 'Martina', name2: m.name2 || m.name || 'Martina', label: m.label }; }
   addBoss(b) { const D = BOSS[b.type]; const r = makeBoss(b.type); this.group.add(r.root); r.root.visible = true;
     this.boss = { kind: 'boss', type: b.type, D, x: b.x, y: b.y, z: b.z, yaw: b.yaw || 0, rig: r, st: 'wait', t: 0, hp: D.hp, arena: b.arena, mi: 0, vx: 0, vz: 0, flash: 0, active: false, dead: false, jumpT: 0 }; }
   // ---------------- host simulation ----------------
@@ -59,8 +59,8 @@ export class Actors {
       if (!blocked(this.g.world, nx, nz, 0.2, 1.1, 2.2)) { c.x = nx; c.z = nz; } else if (!blocked(this.g.world, nx, c.z, 0.2, 1.1, 2.2)) c.x = nx; else if (!blocked(this.g.world, c.x, nz, 0.2, 1.1, 2.2)) c.z = nz;
       let ty = Math.atan2(dx, dz), dd = ty - c.yaw; while (dd > Math.PI) dd -= Math.PI * 2; while (dd < -Math.PI) dd += Math.PI * 2; c.yaw += dd * Math.min(1, dt * 5); }
     c.speed = sp; }
-  stepMartina(dt) { const m = this.martina; if (!m) return; if (m.st === 'walk') { const p = m.path[m.pi]; if (!p) { m.st = 'done'; m.speed = 0; this.g.toastMsg('🐢 Martina: "Ta-da! I\u2019ll hold it for you!"'); return; } const dx = p[0] - m.x, dz = p[1] - m.z, d = Math.hypot(dx, dz); if (d < 0.3) { m.pi++; return; } const sp = 2.2; m.x += dx / d * sp * dt; m.z += dz / d * sp * dt; m.speed = sp; let ty = Math.atan2(dx, dz), dd = ty - m.yaw; while (dd > Math.PI) dd -= Math.PI * 2; while (dd < -Math.PI) dd += Math.PI * 2; m.yaw += dd * Math.min(1, dt * 3); const gr = this.g.world.ground(m.x, m.z, m.y + 1, 0.2); if (gr.y > -1e8) m.y = gr.y; } else m.speed = 0; }
-  actMartina() { const m = this.martina; if (!m || m.st !== 'idle') return false; m.st = 'walk'; m.pi = 0; this.g.toastMsg('🐢 Martina: "Follow me, slowpokes!"'); sfx('squeak'); return true; }
+  stepMartina(dt) { const m = this.martina; if (!m) return; if (m.st === 'walk') { const p = m.path[m.pi]; if (!p) { m.st = 'done'; m.speed = 0; this.g.toastMsg('🐢 ' + m.name2 + ': "Ta-da! I\u2019ll hold it for you!"'); return; } const dx = p[0] - m.x, dz = p[1] - m.z, d = Math.hypot(dx, dz); if (d < 0.3) { m.pi++; return; } const sp = 2.2; m.x += dx / d * sp * dt; m.z += dz / d * sp * dt; m.speed = sp; let ty = Math.atan2(dx, dz), dd = ty - m.yaw; while (dd > Math.PI) dd -= Math.PI * 2; while (dd < -Math.PI) dd += Math.PI * 2; m.yaw += dd * Math.min(1, dt * 3); const gr = this.g.world.ground(m.x, m.z, m.y + 1, 0.2); if (gr.y > -1e8) m.y = gr.y; } else m.speed = 0; }
+  actMartina() { const m = this.martina; if (!m || m.st !== 'idle') return false; m.st = 'walk'; m.pi = 0; this.g.toastMsg('🐢 ' + m.name + ': "Follow me, slowpokes!"'); sfx('squeak'); return true; }
   stepBoss(dt, ps) { const B = this.boss; if (!B || B.dead) return; const g = this.g, D = B.D, A = B.arena; B.flash = Math.max(0, B.flash - dt);
     const inA = ps.filter((p) => p.x > A[0] - 1 && p.x < A[2] + 1 && p.z > A[1] - 1 && p.z < A[3] + 1 && p.y > B.y - 2);
     if (!B.active) { if (inA.length) { B.active = true; B.st = 'intro'; B.t = 0; g.onBossStart(B); } else return; }

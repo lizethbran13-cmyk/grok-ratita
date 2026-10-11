@@ -3,6 +3,9 @@ import * as THREE from 'three';
 import { Builder, P } from './geo.js';
 import { MATS } from './mats.js';
 import { rcyl, lathe, sph, cyl, cone, torus, capsule, tube, leaf, wedge, gear, heart, star, blobGeo } from './shapes.js';
+import { SKINS, skinPattern, dressParts, hatParts } from './dressfx.js';
+// extension registry: DLC packs add enemy / boss models here
+export const EXT = { enemy: {}, boss: {} };
 const PI = Math.PI;
 // multi-material builder -> group of meshes
 function MB() { return { f: new Builder(), g: new Builder(), m: new Builder(), x: new Builder(), l: new Builder(), e: new Builder() }; }
@@ -18,31 +21,32 @@ function eyes(b, y, z, sep, r, opt = {}) {
 }
 // ---------------------------------------------------------------- rats
 export const RAT_COL = { luna: { fur: 0xa9afbd, dark: 0x7d8394, belly: 0xeceef3, eye: 0x1b1b24, name: 'Luna' }, pirat: { fur: 0xc99a6b, dark: 0x9c7148, belly: 0xf6e7d4, eye: 0x1b1b24, name: 'Pi-rat' }, snowie: { fur: 0xfbfbff, dark: 0xe3e1ee, belly: 0xffffff, eye: 0xd0315a, name: 'Snowie' } };
-export function makeRat(id, outfit) {
-  const C = RAT_COL[id] || RAT_COL.luna; const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+export function makeRat(id, outfit, dress) {
+  const C0 = RAT_COL[id] || RAT_COL.luna, SK = dress && SKINS[dress.skin]; const C = SK ? Object.assign({}, C0, SK) : C0; const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
   const t = MB(); // torso
-  t.f.add(P.sphere, C.fur, 0, 0.36, -0.08, 0, 0, 0, 0.36, 0.31, 0.5);
-  t.f.add(P.sphere, C.fur, 0, 0.38, -0.36, 0, 0, 0, 0.33, 0.29, 0.32);
-  t.f.add(P.sphere, C.belly, 0, 0.27, 0.06, 0, 0, 0, 0.27, 0.2, 0.38);
+  const FB = C.metal ? 'x' : 'f';
+  t[FB].add(P.sphere, C.fur, 0, 0.36, -0.08, 0, 0, 0, 0.36, 0.31, 0.5);
+  t[FB].add(P.sphere, C.fur, 0, 0.38, -0.36, 0, 0, 0, 0.33, 0.29, 0.32);
+  t.f.add(P.sphere, C.belly, 0, 0.27, 0.06, 0, 0, 0, 0.27, 0.2, 0.38); skinPattern(t, SK);
   if (id === 'luna') t.f.add(P.sphere, C.dark, 0, 0.55, -0.15, 0, 0, 0, 0.26, 0.12, 0.42); // darker saddle
   if (id === 'pirat') { t.f.add(P.sphere, 0xffffff, 0, 0.5, 0.18, 0, 0, 0, 0.24, 0.16, 0.2); }
   // Ratita Industries backpack
   t.g.add(P.rbox, 0xff4fa0, 0, 0.66, -0.2, 0, 0, 0, 0.36, 0.22, 0.34); t.g.add(P.rboxS, 0xffd23f, 0, 0.78, -0.2, 0, 0, 0, 0.3, 0.06, 0.28);
   t.l.add(P.sphere, 0x3ff0ff, 0, 0.7, -0.38, 0, 0, 0, 0.06, 0.06, 0.03, 0.8); [-1, 1].forEach((s) => t.g.add(P.torus, 0xff4fa0, s * 0.2, 0.52, -0.08, 0, PI / 2, 0, 0.14, 0.2, 0.2));
-  const torso = toGroup(t); body.add(torso);
+  const hb = MB(); dressParts(t, hb, dress); const torso = toGroup(t); body.add(torso);
   // head
   const head = new THREE.Group(); head.position.set(0, 0.48, 0.36); body.add(head);
   const h = MB();
-  h.f.add(P.sphere, C.fur, 0, 0, 0, 0, 0, 0, 0.27, 0.25, 0.27);
-  h.f.add(P.sphere, C.fur, 0, -0.05, 0.2, 0.25, 0, 0, 0.17, 0.15, 0.22);
+  h[FB].add(P.sphere, C.fur, 0, 0, 0, 0, 0, 0, 0.27, 0.25, 0.27);
+  h[FB].add(P.sphere, C.fur, 0, -0.05, 0.2, 0.25, 0, 0, 0.17, 0.15, 0.22);
   h.f.add(P.sphere, C.belly, 0, -0.1, 0.25, 0.25, 0, 0, 0.12, 0.08, 0.15);
   h.g.add(P.sphere, 0xff8fb0, 0, -0.03, 0.42, 0, 0, 0, 0.055, 0.045, 0.045);
   [-1, 1].forEach((sd) => { h.f.add(P.sphere, C.dark, sd * 0.2, 0.2, -0.04, 0, sd * 0.3, sd * -0.35, 0.15, 0.15, 0.04); h.g.add(P.sphere, 0xffb3c8, sd * 0.2, 0.2, -0.015, 0, sd * 0.3, sd * -0.35, 0.1, 0.1, 0.02);
     for (let i = -1; i <= 1; i++) h.m.add(P.cyl, 0x5a4a5a, sd * 0.2, -0.06 + i * 0.03, 0.32, 0, sd * 0.25, PI / 2 + sd * i * 0.2, 0.006, 0.3, 0.006);
     h.g.add(P.sphere, 0xff9fbf, sd * 0.16, -0.08, 0.2, 0, 0, 0, 0.05, 0.03, 0.03); });
-  eyes(h, 0.05, 0.19, 0.11, 0.072, { iris: C.eye, closed: id === 'pirat' ? 1 : 0 });
+  eyes(h, 0.05, 0.19, 0.11, 0.072, { iris: C.eye, closed: id === 'pirat' ? 1 : 0 }); if (C.glowEye) [-1, 1].forEach((sd) => { if (!(id === 'pirat' && sd === 1)) h.l.add(P.sphere, C.eye, sd * 0.11, 0.045, 0.235, 0, 0, 0, 0.04, 0.045, 0.02, 1.2); });
   h.g.add(P.sphere, 0xffffff, -0.025, -0.13, 0.34, 0, 0, 0, 0.025, 0.035, 0.012); h.g.add(P.sphere, 0xffffff, 0.025, -0.13, 0.34, 0, 0, 0, 0.025, 0.035, 0.012); // teeth
-  head.add(toGroup(h));
+  head.add(toGroup(h)); { let n = 0; for (const k in hb) n += hb[k].parts.length; if (n) head.add(toGroup(hb)); }
   // feet
   const feet = []; const fb = new Builder(); fb.add(P.sphere, 0xffb3c8, 0, 0.05, 0.04, 0, 0, 0, 0.08, 0.05, 0.11); fb.add(P.sphere, C.fur, 0, 0.12, 0, 0, 0, 0, 0.09, 0.09, 0.09); const fg = fb.build();
   [[-0.2, 0.2], [0.2, 0.2], [-0.22, -0.32], [0.22, -0.32]].forEach(([x, z]) => { const m = new THREE.Mesh(fg, MATS.f); m.castShadow = true; m.position.set(x, 0, z); body.add(m); feet.push(m); });
@@ -73,6 +77,7 @@ export function setOutfit(rig, o) { const hat = rig.hat; while (hat.children.len
   else if (o === 'chef') { b.f.add(P.cyl, 0xffffff, 0, 0.05, 0, 0, 0, 0, 0.17, 0.14, 0.17); b.f.add(P.sphere, 0xffffff, 0, 0.2, 0, 0, 0, 0, 0.22, 0.12, 0.22); }
   else if (o === 'flower') { for (let i = 0; i < 6; i++) b.g.add(P.sphere, 0xff6fcf, 0.12 + Math.cos(i) * 0.06, 0.02 + Math.sin(i) * 0.06, 0.05, 0, 0, 0, 0.045, 0.045, 0.02); b.g.add(P.sphere, 0xffd23f, 0.12, 0.02, 0.06, 0, 0, 0, 0.035); }
   else if (o === 'wizard') { b.f.add(P.cone, 0x4338ca, 0, 0.2, -0.03, -0.25, 0, 0, 0.2, 0.45, 0.2); b.f.add(P.cyl, 0x4338ca, 0, 0, 0, 0, 0, 0, 0.3, 0.03, 0.3); b.l.add(P.sphere, 0xffd23f, 0.05, 0.2, 0.12, 0, 0, 0, 0.04, 0.04, 0.02, 1); }
+  else if (hatParts(b, o)) {}
   else if (o === 'astro') { b.e.add(P.sphere, 0xcfefff, 0, -0.18, 0.05, 0, 0, 0, 0.42, 0.4, 0.45); b.x.add(P.torus, 0xe5e7eb, 0, -0.45, 0, PI / 2, 0, 0, 0.3, 0.3, 0.4); }
   hat.add(toGroup(b, false)); }
 // animate a rat rig. st: {speed, air, glide, spin, vy, t}
@@ -186,7 +191,7 @@ export function makeCheckpoint() { const b = MB(); b.x.add(rcyl(0.6, 0.9, 0.2, 2
 export function makeHook() { const b = MB(); b.l.add(P.torus, 0x3ff0ff, 0, 0, 0, 0, 0, 0, 0.45, 0.45, 0.45, 0.8); b.x.add(P.sphere, 0x9ca3af, 0, -0.45, 0, 0, 0, 0, 0.12); b.x.add(P.cyl, 0x6b7280, 0, 0.45, 0, 0, 0, 0, 0.06, 0.6, 0.06); return toGroup(b, false); }
 export function makeShot() { const b = new Builder(); b.add(P.sphere, 0xffd23f, 0, 0, 0, 0, 0, 0, 0.22, 0.22, 0.22, 0.6); return new THREE.Mesh(b.build(), MATS.l); }
 // ---------------------------------------------------------------- enemies (cute!)
-export function makeEnemy(type) {
+export function makeEnemy(type) { if (EXT.enemy[type]) return EXT.enemy[type]();
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body); const b = MB(); let parts = {};
   if (type === 'dust') { b.f.add(blobGeo(5, 0.25, 3), 0x9aa0ab, 0, 0.55, 0, 0, 0, 0, 0.6); for (let i = 0; i < 10; i++) b.f.add(P.sphere, 0xb6bcc6, Math.cos(i) * 0.5, 0.55 + Math.sin(i * 1.7) * 0.4, Math.sin(i) * 0.45, 0, 0, 0, 0.2); eyes(b, 0.7, 0.45, 0.18, 0.13, { brow: 0x4b5563, angry: true }); }
   else if (type === 'windup') { b.g.add(P.sphere, 0x60a5fa, 0, 0.5, 0, 0, 0, 0, 0.45, 0.4, 0.55); b.g.add(P.sphere, 0x93c5fd, 0, 0.6, 0.45, 0, 0, 0, 0.3); [-1, 1].forEach((s) => b.g.add(P.sphere, 0x3b82f6, s * 0.28, 0.9, 0.35, 0, 0, 0, 0.18, 0.18, 0.05)); eyes(b, 0.68, 0.68, 0.12, 0.09, { brow: 0x1e3a8a, angry: true }); b.x.add(P.cyl, 0x9ca3af, 0, 0.1, 0, 0, 0, 0, 0.35, 0.1, 0.35);
@@ -199,7 +204,7 @@ export function makeEnemy(type) {
   else if (type === 'toycar') { b.g.add(P.rbox, 0xef4444, 0, 0.45, 0, 0, 0, 0, 0.9, 0.45, 1.4); b.g.add(P.rbox, 0xfca5a5, 0, 0.8, -0.1, 0, 0, 0, 0.7, 0.35, 0.7); [-1, 1].forEach((s) => [-1, 1].forEach((t) => b.m.add(P.cyl, 0x111827, s * 0.48, 0.22, t * 0.45, 0, 0, PI / 2, 0.22, 0.15, 0.22))); eyes(b, 0.55, 0.7, 0.2, 0.12, { brow: 0x7f1d1d, angry: true }); }
   body.add(toGroup(b)); return Object.assign({ root, body, type, t: Math.random() * 6 }, parts);
 }
-export function animEnemy(e, dt, speed) { e.t += dt; const t = e.t, b = e.body;
+export function animEnemy(e, dt, speed) { e.t += dt; const t = e.t, b = e.body; if (e.anim) return e.anim(e, dt, speed);
   if (e.type === 'dust') { const h = Math.abs(Math.sin(t * 5)); b.position.y = h * 0.4; b.scale.set(1 + (1 - h) * 0.15, 1 - (1 - h) * 0.15, 1); }
   else if (e.type === 'windup') { if (e.key) e.key.rotation.z = t * 3; b.rotation.z = Math.sin(t * 10) * 0.08; }
   else if (e.type === 'bee' || e.type === 'moth') { b.position.y = Math.sin(t * 3) * 0.2; if (e.wings) { e.wings[0].rotation.z = Math.sin(t * 25) * 0.6; e.wings[1].rotation.z = -Math.sin(t * 25) * 0.6; } }
@@ -208,7 +213,7 @@ export function animEnemy(e, dt, speed) { e.t += dt; const t = e.t, b = e.body;
   else if (e.type === 'bot' || e.type === 'toycar') { b.position.y = Math.abs(Math.sin(t * 12)) * 0.03; }
 }
 // ---------------------------------------------------------------- bosses
-export function makeBoss(type) {
+export function makeBoss(type) { if (EXT.boss[type]) return EXT.boss[type]();
   const root = new THREE.Group(), body = new THREE.Group(); root.add(body); const b = MB(); const parts = {};
   if (type === 'toast') { b.g.add(P.rbox, 0xf43f5e, 0, 2.2, 0, 0, 0, 0, 5.2, 3.6, 3.2); b.x.add(P.rbox, 0xe5e7eb, 0, 0.3, 0, 0, 0, 0, 5.4, 0.6, 3.4); [-0.9, 0.9].forEach((s) => b.m.add(P.rboxS, 0x1f2937, s, 4.05, 0, 0, 0, 0, 0.6, 0.15, 2.2)); eyes(b, 2.6, 1.62, 0.9, 0.5, { brow: 0x7f1d1d, angry: true }); b.g.add(P.torus, 0x1f2937, 0, 1.4, 1.62, 0, 0, PI, 0.6, 0.35, 0.3); b.x.add(P.capsule, 0xcbd5e1, 2.8, 2.2, 0, 0, 0, PI / 2, 0.3, 0.8, 0.3);
     const toast = (() => { const t = MB(); [-0.9, 0.9].forEach((s) => { t.m.add(P.rbox, 0xd4a373, s, 0, 0, 0, 0, 0, 0.35, 1.8, 1.9); t.m.add(P.rbox, 0xf7d9a8, s, 0.05, 0, 0, 0, 0, 0.4, 1.6, 1.7); }); return toGroup(t); })(); toast.position.y = 3.6; body.add(toast); parts.toast = toast; }
@@ -231,7 +236,7 @@ export function makeBoss(type) {
     const tail = (() => { const k = MB(); k.g.add(tube([[0, 0, 0], [0, 1.5, -1.5], [0, 3.5, -1.8], [0.6, 4.6, -1.2]], 0.45, 24, 10), fur, 0, 0, 0); return toGroup(k); })(); tail.position.set(0, 3, -3); body.add(tail); parts.tail = tail; }
   body.add(toGroup(b)); return Object.assign({ root, body, type, t: 0 }, parts);
 }
-export function animBoss(B, dt, st) { B.t += dt; const t = B.t, b = B.body; const tired = st === 'tired';
+export function animBoss(B, dt, st) { B.t += dt; const t = B.t, b = B.body; const tired = st === 'tired'; if (B.anim) { b.rotation.z = tired ? Math.sin(t * 3) * 0.08 : 0; return B.anim(B, dt, st, t); }
   b.rotation.z = tired ? Math.sin(t * 3) * 0.08 : 0; b.position.y = 0;
   if (B.toast) B.toast.position.y = 3.6 + (st === 'attack' ? Math.abs(Math.sin(t * 6)) * 1.4 : 0);
   if (B.brushes) B.brushes.forEach((br, i) => br.rotation.y = t * (tired ? 2 : 14) * (i ? 1 : -1));
@@ -243,4 +248,4 @@ export function animBoss(B, dt, st) { B.t += dt; const t = B.t, b = B.body; cons
   if (B.type === 'dustking' || B.type === 'kitty') { const h = st === 'hop' ? Math.abs(Math.sin(t * 4)) : 0; b.scale.set(1 + (tired ? 0.05 : 0), 1 - (tired ? 0.1 : 0) + h * 0.05, 1); }
   if (B.type === 'clanky') b.rotation.z = Math.sin(t * 6) * (tired ? 0.15 : 0.05);
 }
-export { toGroup, MB };
+export { toGroup, MB, eyes };

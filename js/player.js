@@ -11,7 +11,7 @@ export class Player {
   constructor(o) {
     Object.assign(this, { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, yaw: 0, onGround: false, gs: null, jumps: 0, coyote: 0, jbuf: 0, glide: false, air: 0, spin: 0, spinCd: 0, spinHang: false, blastCd: 0, zip: null, hurtT: 0, squash: 0, lean: 0, respawnT: 0, shield: 1, shieldCd: 0, speed: 0, dead: false });
     this.rat = o.rat || 'luna'; this.name = o.name || 'Rat'; this.color = o.color || '#ff4fd8'; this.local = !!o.local; this.pid = o.pid || 'me'; this.slot = o.slot || 0;
-    this.rig = makeRat(this.rat, o.outfit); this.root = this.rig.root; this.gadgets = o.gadgets || new Set(['blaster']);
+    this.rig = makeRat(this.rat, o.outfit, o.dress); this.root = this.rig.root; this.gadgets = o.gadgets || new Set(['blaster']);
     this.maxHearts = 4 + (this.local ? up('hearts') : 0); this.hearts = this.maxHearts; this.cp = null;
     const sh = new THREE.Mesh(new THREE.CircleGeometry(0.42, 24), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28, depthWrite: false })); sh.rotation.x = -Math.PI / 2; sh.renderOrder = 1; this.blob = sh;
     const bub = new THREE.Mesh(new THREE.SphereGeometry(0.75, 24, 16), new THREE.MeshPhysicalMaterial({ color: 0x9ff3ff, transparent: true, opacity: 0.22, roughness: 0.05, iridescence: 1, depthWrite: false })); bub.position.y = 0.4; bub.visible = false; this.root.add(bub); this.bubble = bub;
