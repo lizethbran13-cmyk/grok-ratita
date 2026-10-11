@@ -14,7 +14,7 @@ const L = 1; // beach height
 function base(w, id, env) { const I = G(id); w.pirate = true; w.forceRat = 'pirat'; w.gadgets = ['blaster', 'glider', 'grapple']; w.music = I.music; w.camDist = 7; w.isle = id; outdoor(w, env, { y: 0 }); parrotNPC(w); return I; }
 const clipZ = (pts, cut, keepAbove) => pts.map(([x, z]) => [x, keepAbove ? Math.max(z, cut) : Math.min(z, cut)]);
 function ell(cx, cz, rx, rz, n = 36, s = 1, wob = 0.06) { return blobPoly(cx, cz, rx, rz, n, wob, s); }
-function arrival(w, z, msg) { w.start = [0, L + 0.2, z]; w.startYaw = PI; w.cp(0, L, z, PI); pier(w, 0, z + 8, 0, z - 12, L + 0.2, { w: 6 });
+function arrival(w, z, msg) { w.start = [0, L + 0.2, z]; w.startYaw = PI; w.cp(-1.6, L + 0.2, z - 9, PI); pier(w, 0, z + 8, 0, z - 12, L + 0.2, { w: 6 });
   w.start = [0, L + 0.3, z]; captainNPC(w, 2.2, L + 0.2, z - 3, PI, { label: '🏴‍☠️ Captain Eye Patch', fn: (app, g) => { sfx('squeak'); g.toastMsg('🏴‍☠️ Captain: "' + msg + '"'); } }); rowboat(w, 5.6, 0.25, z + 2, 0.15, 0xef4444); }
 function scatter(w, land, n, fn, s, avoid) { pseed(s); let k = 0; for (let i = 0; i < n * 6 && k < n; i++) { const x = land.cx + (rnd() - 0.5) * land.w, z = land.cz + (rnd() - 0.5) * land.d; if (!land.L.inside(x, z) || (avoid && avoid(x, z))) continue; fn(x, z, k++); } }
 const bossEnd = (w, type, x, z, arena, y = L) => { w.bossSpec = { type, x, y, z, yaw: 0, arena }; w.goldPos = [x, y + 1.6, z + 1]; };
@@ -82,7 +82,7 @@ BUILD.p_jungle = (w) => { base(w, 'p_jungle', { fog: 0xcdeccf, fogD: 0.0032, hem
   w.crumbLine(2, L, 48, 2, L, 10, 9); w.enemy('gull', -4, L + 3, 24, { range: 6 }); w.enemy('crab', 4, L, 44, { axis: 'x', range: 4 }); w.cheese(-16, L, 46); w.heartP(14, L, 40);
   // treetop route (west): hooks + platforms in the canopy, gem + chest
   [[-28, 6, 34], [-34, 10, 24], [-28, 14, 14]].forEach(([x, y, z], i) => { w.add('m', rcyl(2.2, 0.5, 0.15, 20), C.woodL, x, L + y, z); w.solid(x - 2.1, L + y, z - 2.1, x + 2.1, L + y + 0.5, z + 2.1); w.add('m', cyl(12), 0x6b4423, x, L, z, 0, 0, 0, 0.7, y, 0.7); w.solid(x - 0.7, L, z - 0.7, x + 0.7, L + y, z + 0.7); w.add('g', blobGeo(i + 4, 0.2, 2), 0x2f9e4a, x, L + y + 6, z, 0, i, 0, 4.5, 3, 4.5); w.hook(x + 1.6, L + y + 3.2, z + 1.6); });
-  w.part(-28, L + 14.5, 14); w.baby(-34, L + 10.5, 24); w.crumbArc(-28, L + 7, 34, -34, L + 11, 24, 2, 5); talk(w, -36, 30, -22, 42, 'par', 'Treetop huts. Grapple up. I\u2019ll just... fly. Like a normal bird.');
+  w.part(-28, L + 14.5, 14); w.baby(-34, L + 10.5, 24); w.part(-28, L + 6.5, 34); w.crumbArc(-28, L + 7, 34, -34, L + 11, 24, 2, 5); talk(w, -36, 30, -22, 42, 'par', 'Treetop huts. Grapple up. I\u2019ll just... fly. Like a normal bird.');
   // the river gorge + rope bridge, and a broken bridge to the east (glide it)
   w.add('m', rbox(130, 0.6, 10, 0.2), 0x2b7a8c, 0, -0.9, -1); ropeBridge(w, -18, 4.4, -18, -6.4, L + 0.15, 2.6, 0.6); w.cp(-18, L, 7, PI);
   rockWall(w, 24, 2, 30, 6, L, 3, C.rock, { lumps: false }); rockWall(w, 24, -10, 30, -6, L, 3, C.rock, { lumps: false }); w.part(27, L + 3, -8); w.cheese(27, L + 3, 4); barrel(w, 27, L, 8, 1);
@@ -94,7 +94,7 @@ BUILD.p_jungle = (w) => { base(w, 'p_jungle', { fog: 0xcdeccf, fogD: 0.0032, hem
     pseed(5); for (let i = 0; i < 8; i++) w.add('m', blobGeo(i + 60, 0.28, 2), i % 2 ? cc : 0x6b6a5a, -36 + (rnd() - 0.2) * 2, L + 2 + rnd() * 11, -40 + (i < 4 ? i * 2.2 : 17 + (i - 4) * 2.2), 0, i, 0, 1.6, 2.2, 1.6);
     w.add('e', rbox(0.4, 13, 7, 0.2), 0xbff4ff, -35.6, L + 6.5, -27); w.add('l', rbox(2, 0.4, 9, 0.2), 0xe0f7ff, -34.5, L + 0.1, -27, 0, 0, 0, 1, 1, 1, 0.3);
     w.zone('hint', -35, L, -32, -30, L + 6, -22, { msg: '🦜 Grumbles: Something sparkles BEHIND the waterfall. Walk right through it!' });
-    camZone(w, -48, -31, -36, -23, L - 1, L + 5.5, 4, 0.4); crystal(w, -46, L, -29, 0.7, 0xa78bfa); crystal(w, -46.5, L, -24.5, 0.5, 0x3ff0ff, false); w.baby(-44.5, L, -26); treasurePile(w, -46, L, -27, 0.5);
+    camZone(w, -48, -31, -36, -23, L - 1, L + 5.5, 4, 0.4); crystal(w, -46, L, -29, 0.7, 0xa78bfa); crystal(w, -46.5, L, -24.5, 0.5, 0x3ff0ff, false); w.baby(-44.5, L, -26); w.part(-43, L, -29.5); treasurePile(w, -46, L, -27, 0.5);
     w.anims.push(() => { if (w.game && Math.random() < 0.5 && inV(-35.6, L + 6, -27)) w.game.fx.emit(-35.4, L + 12, -30 + Math.random() * 6, 0.4, -3, 0, 0.3, 0xe0f7ff, 1.2, 1, 0); }); }
   // drum temple (hollow, enter from the south)
   const TZ = -42, TY = L; const tw = 0x9ca39a, td = 0x7d857c;
@@ -135,17 +135,17 @@ BUILD.p_volcano = (w) => { base(w, 'p_volcano', { skyTop: 0x5a3a6a, skyMid: 0xf5
   lava(w, -60, 16, 60, 28, L); for (let i = 0; i < 4; i++) { const x = -2 + (i % 2) * 4, z = 26 - i * 3.2; w.add('m', blobGeo(i + 11, 0.2, 2), C.basalt, x, L, z, 0, i, 0, 1.6, 1, 1.5); w.solid(x - 1.2, L - 1, z - 1.2, x + 1.2, L + 0.6, z + 1.2, { floor: true }); }
   w.crumbArc(-2, L + 1, 26, 2, L + 1, 16, 2, 4); w.cp(0, L, 31, PI); talk(w, -10, 28, 10, 34, 'par', 'Hop the stones. Floor is lava. Literally. This isn\u2019t a game. Well, it IS a game.');
   // valve 1 (west), on a geyser-lifted ledge
-  mesa(w, -28, 2, 14, 12, 9, C.basalt, 0x6b4f4f, L); geyser(w, -18, L, 10, 1.4, 12, 36); latchPlate(w, 'v1', -28, 9, 2, 1.4, 0x3ff0ff); w.part(-32, 9, -2); talk(w, -24, 6, -12, 14, 'par', 'Stand on the steam geyser and up you go. Wheee. I mean... boring.');
+  mesa(w, -28, 2, 14, 12, 9, C.basalt, 0x6b4f4f, L); geyser(w, -18, L, 10, 1.4, 12, 36); w.part(-18, L + 9, 10); latchPlate(w, 'v1', -28, 9, 2, 1.4, 0x3ff0ff); w.part(-32, 9, -2); talk(w, -24, 6, -12, 14, 'par', 'Stand on the steam geyser and up you go. Wheee. I mean... boring.');
   // valve 2 (east), across moving platforms over a lava pool
   lava(w, 14, -4, 40, 12, L); w.mover(16.5, L - 0.2, 4, [3, 0.6, 3], [20, 0, 0], 6, 0, 0x5b4f4f); w.mover(22, L - 0.2, -1, [3, 0.6, 3], [0, 0, 9], 4.5, 0.5, 0x5b4f4f);
-  mesa(w, 44, 2, 8, 10, 3, C.basalt, 0x6b4f4f, L); latchPlate(w, 'v2', 44, 3, 2, 1.4, 0x3ff0ff); w.baby(46, 3, -1.5); w.cheese(42, 3, 5); talk(w, 8, 0, 16, 10, 'par', 'Ride the rocks. Don\u2019t touch the orange stuff. Orange is BAD.');
+  mesa(w, 44, 2, 8, 10, 3, C.basalt, 0x6b4f4f, L); latchPlate(w, 'v2', 44, 3, 2, 1.4, 0x3ff0ff); w.part(44, 3, 6); w.baby(46, 3, -1.5); w.cheese(42, 3, 5); talk(w, 8, 0, 16, 10, 'par', 'Ride the rocks. Don\u2019t touch the orange stuff. Orange is BAD.');
   // lava river 2 with a forge on the far side (enterable), valve 3 inside
   lava(w, -60, -16, 60, -6, L); ropeBridge(w, 0, -5.6, 0, -16.4, L + 0.6, 2.6, 0.3); w.cp(0, L, -2, PI);
   const FZ = -28; w.slab('m', 0x5b4f4f, -8, L, FZ, 2, 7, 16, 0.2); w.slab('m', 0x5b4f4f, 8, L, FZ, 2, 7, 16, 0.2); w.slab('m', 0x5b4f4f, 0, L, FZ - 8, 18, 7, 2, 0.2); w.slab('m', 0x5b4f4f, -5, L, FZ + 8, 4, 7, 2, 0.2); w.slab('m', 0x5b4f4f, 5, L, FZ + 8, 4, 7, 2, 0.2); w.slab('m', 0x5b4f4f, 0, L + 4.5, FZ + 8, 6, 2.5, 2, 0.2);
   ceiling(w, -9, FZ - 9, 9, FZ + 9, L + 7, 0.8, 0x3a3436); w.add('m', lathe([[0, 0], [1.6, 0], [1.2, 6], [0, 6]], 16), 0x3a3436, 5, L + 7.8, FZ - 4); camZone(w, -7, FZ - 7, 7, FZ + 7, L - 1, L + 7, 4.4, 0.45);
   w.add('x', rbox(2.4, 1.0, 1.0, 0.2), 0x4b4b52, -3, L + 1.4, FZ - 2); w.add('x', rbox(1.0, 1.0, 0.8, 0.1), 0x4b4b52, -3, L + 0.5, FZ - 2); w.solid(-4.2, L, FZ - 2.5, -1.8, L + 1.9, FZ - 1.5);
   lava(w, 2, FZ - 7, 7, FZ - 4, L + 0.6); w.slab('m', C.basalt, 4.5, L, FZ - 5.5, 6, 0.6, 4, 0.1, { cam: false });
-  latchPlate(w, 'v3', -3, L, FZ + 3, 1.3, 0x3ff0ff); w.part(5, L + 0.1, FZ + 4); for (let i = 0; i < 3; i++) torch(w, -6.5, L, FZ - 6 + i * 6, 2.4); w.lights.push({ x: 4.5, y: L + 3, z: FZ - 5.5, c: 0xff6a1a, i: 40, d: 16 });
+  latchPlate(w, 'v3', -3, L, FZ + 3, 1.3, 0x3ff0ff); w.baby(-5.5, L, FZ - 5.5); w.part(5, L + 0.1, FZ + 4); for (let i = 0; i < 3; i++) torch(w, -6.5, L, FZ - 6 + i * 6, 2.4); w.lights.push({ x: 4.5, y: L + 3, z: FZ - 5.5, c: 0xff6a1a, i: 40, d: 16 });
   talk(w, -6, FZ + 9, 6, FZ + 14, 'par', 'The old forge. The last valve is inside. It\u2019s hot in there. Like, REALLY hot.');
   w.enemy('crab', -16, L, -24, { axis: 'z', range: 5 }); w.enemy('gull', 14, L + 3, -26, { range: 6 }); w.enemy('crab', 16, L, 40, { axis: 'x', range: 4 });
   dropZone(w, -40, -46, 40, -18, 2.2, 0xff6a1a, 15);
@@ -185,7 +185,7 @@ BUILD.p_lagoon = (w) => { base(w, 'p_lagoon', { skyTop: 0x1d8fe8, fog: 0xc8f1f7,
   w.enemy('jelly', 20, L + 2, -26, { range: 5 }); w.enemy('jelly', -14, L + 2, -34, { range: 5 }); w.enemy('crab', 30, L, 10, { axis: 'z', range: 5 }); w.enemy('crab', -40, L, 14, { axis: 'x', range: 4 });
   talk(w, -30, 12, -16, 24, 'par', 'Pink coral plates. Press all three and the turtle bridge wakes up. Don\u2019t ask me how. Magic. Ugh.');
   for (let i = 0; i < 10; i++) coral(w, Math.cos(i * 0.63) * 34, -0.4, -12 + Math.sin(i * 0.63) * 32, 1.3, [0xff6f91, 0xffd23f, 0xa78bfa, 0x22d3ee][i % 4]);
-  w.part(30, L, -34); w.cheese(-10, L, -44); w.part(-26, L, 30); w.heartP(30, L, 20);
+  w.part(30, L, -34); w.cheese(-10, L, -44); w.part(-26, L, 30); w.part(-22, L, 20.6); w.part(-8, L, -30); w.baby(40, L, -20); w.baby(-40, L, 24); w.heartP(30, L, 20);
   // turtle-shell bridge across the lagoon to the octopus rock (rises once the three reef plates are pressed)
   const turtle = (T, sub, sz) => { T.add('g', sph(20), 0x4d7c0f, 0, 0.3, 0, 0, 0, 0, sz[0] / 2, 0.55, sz[2] / 2); for (let i = 0; i < 6; i++) T.add('g', sph(10), 0x65a30d, Math.cos(i) * sz[0] * 0.3, 0.75, Math.sin(i) * sz[2] * 0.3, 0, 0, 0, 0.5, 0.15, 0.5); T.add('g', sph(14), 0x84cc16, 0, 0.2, sz[2] / 2 + 0.4, 0, 0, 0, 0.5, 0.4, 0.6); T.add('g', sph(8), 0x111111, 0.2, 0.4, sz[2] / 2 + 0.85, 0, 0, 0, 0.08); T.add('g', sph(8), 0x111111, -0.2, 0.4, sz[2] / 2 + 0.85, 0, 0, 0, 0.08); };
   const tm = []; [[0, 12, [0, 0, 0]], [-4, 6, [8, 0, 0]], [0, 0, [0, 0, 0]], [4, -6, [-8, 0, 0]]].forEach(([x, z, off], i) => { const s = w.mover(x, -3.5, z, [3.4, 0.6, 3.4], off, 6, i * 0.2, 0, turtle); tm.push(w.movers[w.movers.length - 1]); });
@@ -212,7 +212,7 @@ BUILD.p_skull = (w) => { base(w, 'p_skull', { skyTop: 0x1e1b4b, skyMid: 0x6d5a9e
   // courtyard: two levers on towers (hooks), skeleton crew
   w.enemy('skel', -10, L, 4, { axis: 'x', range: 6 }); w.enemy('skel', 10, L, -2, { axis: 'x', range: 6 }); w.enemy('skel', 0, L, -10, { axis: 'z', range: 4 }); w.enemy('gull', 14, L + 3, 8, { range: 6 });
   mesa(w, -22, -4, 8, 8, 10, 0x5b5466, 0x6b6470, L); w.hook(-17, 7, 1); w.hook(-18, 12.5, -4.5); w.lever('k1', -23, 10, -5, 0.5); w.part(-24, 10, -2);
-  mesa(w, 22, -4, 8, 8, 10, 0x5b5466, 0x6b6470, L); w.mover(14, L, 4, [3, 0.6, 3], [0, 8.6, 0], 5, 0, 0x7dffb0); w.lever('k2', 23, 10, -5, -0.5); w.baby(24, 10, -1.5);
+  mesa(w, 22, -4, 8, 8, 10, 0x5b5466, 0x6b6470, L); w.mover(14, L, 4, [3, 0.6, 3], [0, 8.6, 0], 5, 0, 0x7dffb0); w.lever('k2', 23, 10, -5, -0.5); w.baby(24, 10, -1.5); w.part(14, L + 10, 4); w.part(-16, L, WZ - 9.5); w.baby(-30, L, -8);
   talk(w, -28, -10, -14, 4, 'par', 'Two levers, two towers. Grapple left, ride the lift right. Then the skull opens its mouth. Gross.');
   w.cheese(0, L, 6); w.heartP(-6, L, 10); w.crate(6, L, 8); w.crate(-12, L, -12); w.crumbRing(0, L, -2, 5, 8);
   // the skull: hollow head with a jaw door, a stair hall inside, and the captain's deck on top
@@ -234,7 +234,7 @@ BUILD.p_skull = (w) => { base(w, 'p_skull', { skyTop: 0x1e1b4b, skyMid: 0x6d5a9e
   w.add('x', torus(0.12, 24), 0xffc83d, 3.55, TY + 0.05, SZ, PI / 2, 0, 0, 2.6, 3.3, 1);
   [[-17, SZ - 24, -16, SZ + 8], [16, SZ - 24, 17, SZ + 8], [-17, SZ - 25, 17, SZ - 24], [-17, SZ + 8, 17, SZ + 9]].forEach(([a, b, c, d]) => { w.add('m', rbox(c - a, 1.3, d - b, 0.1), 0x5b3a1f, (a + c) / 2, TY + 0.65, (b + d) / 2); w.solid(a, TY, b, c, TY + 1.4, d, { cam: false }); });
   w.add('m', cyl(14), 0x5b3a1f, 0, TY, SZ - 20, 0, 0, 0, 0.6, 16, 0.6); w.solid(-0.6, TY, SZ - 20.6, 0.6, TY + 16, SZ - 19.4); w.add('s', rbox(10, 7, 0.1, 0.05), 0x111827, 0, TY + 10, SZ - 20.2); w.add('g', sph(14), 0xffffff, 0, TY + 10.5, SZ - 20.4, 0, 0, 0, 1.4, 1.4, 0.1);
-  [[-12, SZ - 20], [12, SZ - 20], [-12, SZ + 4], [12, SZ + 4]].forEach(([x, z]) => torch(w, x, TY, z, 2.6, 0x7dffb0)); w.heartP(-10, TY, SZ - 2); w.heartP(10, TY, SZ - 2); w.cp(3.4, TY, SZ + 1.5, PI);
+  [[-12, SZ - 20], [12, SZ - 20], [-12, SZ + 4], [12, SZ + 4]].forEach(([x, z]) => torch(w, x, TY, z, 2.6, 0x7dffb0)); w.heartP(-10, TY, SZ - 2); w.heartP(10, TY, SZ - 2); w.part(12, TY, SZ - 17); w.cp(3.4, TY, SZ + 1.5, PI);
   talk(w, -16, SZ - 4, 16, SZ + 8, 'par', 'CAPTAIN CLAWBEARD! The meanest cat on the seven seas. You got this, Pi-rat. ...I believe in you. Don\u2019t tell anyone I said that.', TY - 1, TY + 6);
   w.bossSpec = { type: 'clawbeard', x: 0, y: TY, z: SZ - 12, yaw: 0, arena: [-15, SZ - 22, 15, SZ + 6] }; w.goldPos = [0, TY + 1.6, SZ - 12]; w.finalGold = true;
   // lightning storm

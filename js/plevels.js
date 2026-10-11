@@ -44,7 +44,7 @@ function sail(w, x, y, z, wid, h, col = 0xfff7e6, emblem) { const R = wid * 0.85
 BUILD.pship = (w) => {
   w.pirate = true; w.forceRat = 'pirat'; w.gadgets = ['blaster', 'glider', 'grapple']; w.music = 'ship'; w.camDist = 7.2;
   const SEA_Y = -2.5; const sea = outdoor(w, { fogD: 0.0017, fog: 0xc6e9ff, skyTop: 0x2a86f5, skyMid: 0xa8e0ff }, { y: SEA_Y, size: 2600, amp: 0.9 });
-  w.start = [0, 0.1, 6]; w.startYaw = PI; w.cp(0, 0, 8, PI);
+  w.start = [0, 0.1, 6]; w.startYaw = PI; w.cp(-3.5, 0, -9, PI);
   hull(w);
   // ---- stern castle: cabin below, quarterdeck on top
   const wallC = 0x8b5a2b, trim = 0xffc83d;
@@ -99,7 +99,7 @@ BUILD.pship = (w) => {
   w.kiosks.push({ id: 'bottle', x: -4.6, y: 0, z: 17.4, r: 2.2, label: '🏠 Ship-in-a-bottle: back to Ratita HQ', fn: (app) => { sfx('door'); app.loadLevel('hq', true); } });
   // cabin dressing: hammock, lantern lights, barrels, chest, table
   w.add('f', tube([[-6.3, 3.2, 13.4], [-5.2, 1.7, 15], [-6.3, 3.2, 16.6]], 0.45, 20, 10), 0xfde68a, 0, 0, 0); barrel(w, 5.6, 0, 13.4, 0.8); barrel(w, 5.6, 0, 20.8, 0.8, 1.2, 0x8b5a2b); treasurePile(w, 3.2, 0, 13.6, 0.55);
-  [[-3, 15], [3, 19]].forEach(([x, z]) => { w.add('x', cyl(8), 0x4b4b52, x, 3.6, z, 0, 0, 0, 0.04, 1.0, 0.04); PR.lantern(w, x, 2.6, z); w.lights.push({ x, y: 3.2, z, c: 0xffc46b, i: 24, d: 14 }); });
+  [[-3, 15], [3, 19]].forEach(([x, z]) => { w.add('x', cyl(8), 0x4b4b52, x, 3.6, z, 0, 0, 0, 0.04, 1.0, 0.04); PR.lantern(w, x, 2.6, z); w.lights.push({ x, y: 3.2, z, c: 0xffc46b, i: 9, d: 11 }); });
   // ---- deck dressing: cannons, barrels, crates, ropes, buckets, lanterns, chest, figurehead
   const cans = [[-6.3, -6, -PI / 2], [6.3, -6, PI / 2], [-6.3, 3.5, -PI / 2], [6.3, 3.5, PI / 2]];
   cans.forEach(([x, z, ry], i) => { const T = w.tf(x, 0, z, ry); cannonModel(T); T.solid(-0.8, 0, -1, 0.8, 1.4, 1); w.kiosks.push({ id: 'can' + i, x: x - Math.sin(ry) * 1.6, y: 0, z, r: 1.8, label: '💥 Fire the cannon!', fn: (app, g) => { const P_ = T.P(0, 1.2, -1.6); sfx('bosshit'); g.fx.burst(P_[0], P_[1], P_[2], 0xfff1c1, 18, 6); g.cam.shake = 0.35; const dx = -Math.sin(ry), dz = -Math.cos(ry); for (let k = 0; k < 10; k++) g.fx.emit(P_[0], P_[1], P_[2], dx * (22 + k), 6 - k * 0.2, dz * (22 + k), 0.22, 0x2d2d33, 1.6, 1, 0); g.toastMsg(['💥 KABOOM!', '💥 Bullseye! (on the ocean)', '🦜 Grumbles: "MY EARS!"', '💥 Ka-BLAM!'][(g.T * 3 | 0) % 4]); } }); });
