@@ -14,8 +14,11 @@ import { sfx, playMusic } from './audio.js';
 import { S, persist, up } from './save.js';
 import { LEVELS, gadgetsFor } from './data.js';
 import { readMove, edge, held, IN } from './input.js';
+import { piratePickupGeos, makeChest, makeMapGoal } from './pmodels.js';
+import { myDress } from './pirate.js';
+import './plevels.js';
 const PI = Math.PI;
-let PG = null;
+let PG = null, PGP = null;
 export class Game {
   constructor(app, levelId, opts = {}) {
     this.app = app; this.levelId = levelId; this.scene = E.scene; this.net = app.net; this.hud = app.hud; this.online = !!opts.online; this.host = !opts.online || opts.host; this.seed = opts.seed || 1;
@@ -26,7 +29,7 @@ export class Game {
     this.fx = new FX(this.scene); this.actors = new Actors(this); this.actors.spawnAll(w);
     this.buildPickups(); this.buildLights();
     this.players = new Map(); const gad = levelId === 'hq' ? gadgetsFor(0, S) : gadgetsFor(this.levelIdx, S);
-    this.me = new Player({ rat: S.rat, outfit: S.outfit, name: S.name || 'You', local: true, gadgets: gad, pid: opts.pid || 'me' }); this.me.addTo(this.scene); this.me.place(w.start, w.startYaw || 0); this.me.cp = w.start.slice(); this.me.cpYaw = w.startYaw || 0;
+    this.pirate = !!w.pirate; this.me = new Player({ rat: w.forceRat || S.rat, outfit: S.outfit, dress: myDress(), name: S.name || 'You', local: true, gadgets: w.gadgets ? new Set(w.gadgets) : gad, pid: opts.pid || 'me' }); this.me.addTo(this.scene); this.me.place(w.start, w.startYaw || 0); this.me.cp = w.start.slice(); this.me.cpYaw = w.startYaw || 0;
     if (opts.slot) { const a = (opts.slot) * 2.1; this.me.x += Math.cos(a) * 1.2; this.me.z += Math.sin(a) * 1.2; }
     this.players.set(this.me.pid, this.me);
     this.cam = { yaw: (w.startYaw || 0), pitch: 0.36, dist: 6.6, pos: new THREE.Vector3(), tgt: new THREE.Vector3(), snap: true, shake: 0 };
@@ -39,14 +42,14 @@ export class Game {
     for (const k in this.inst || {}) { const im = this.inst[k].im; this.scene.remove(im); im.dispose && im.dispose(); }
     clearWorldCaches(); E.renderer.renderLists.dispose(); }
   buildPickups() {
-    const w = this.world; this.extra = []; this.inst = {};
+    const w = this.world; this.extra = []; this.inst = {}; const PGX = w.pirate ? Object.assign({}, PG, PGP || (PGP = piratePickupGeos())) : PG;
     for (const k of ['crumb', 'cheese', 'part', 'heart']) { const list = w.ents.filter((e) => e.k === k); if (!list.length) continue; const mat = k === 'part' ? MATS.g : k === 'heart' ? MATS.g : MATS.g;
-      const im = new THREE.InstancedMesh(PG[k], mat, list.length); im.castShadow = k !== 'crumb'; im.frustumCulled = false; list.forEach((e, i) => { e.ii = i; }); this.scene.add(im); this.extra.push(im); this.inst[k] = { im, list }; }
-    this.babies = w.ents.filter((e) => e.k === 'baby').map((e, i) => { const b = makeBaby(i); b.root.position.set(e.x, e.y, e.z); this.scene.add(b.root); this.extra.push(b.root); e.obj = b; return e; });
+      const im = new THREE.InstancedMesh(PGX[k], mat, list.length); im.castShadow = k !== 'crumb'; im.frustumCulled = false; list.forEach((e, i) => { e.ii = i; }); this.scene.add(im); this.extra.push(im); this.inst[k] = { im, list }; }
+    this.babies = w.ents.filter((e) => e.k === 'baby').map((e, i) => { const b = w.pirate ? makeChest(i) : makeBaby(i); b.root.position.set(e.x, e.y, e.z); this.scene.add(b.root); this.extra.push(b.root); e.obj = b; return e; });
     this.crates = w.ents.filter((e) => e.k === 'crate');
     this.cps = w.checkpoints.map((c) => { const m = makeCheckpoint(); m.root.position.set(c.x, c.y, c.z); m.root.rotation.y = c.yaw || 0; this.scene.add(m.root); this.extra.push(m.root); c.obj = m; return c; });
     this.hookObjs = w.hooks.map((h) => { const m = makeHook(); m.position.set(h.x, h.y, h.z); this.scene.add(m); this.extra.push(m); h.obj = m; return h; });
-    if (w.goldPos) { const g = new THREE.Mesh(PG.gold, MATS.x); g.castShadow = true; g.position.set(...w.goldPos); g.visible = !w.bossSpec; this.scene.add(g); this.extra.push(g); this.gold = g; const halo = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.18, depthWrite: false, toneMapped: false })); g.add(halo); }
+    if (w.goldPos) { const g = w.pirate && !w.finalGold ? makeMapGoal() : new THREE.Mesh(PG.gold, MATS.x); g.castShadow = true; g.position.set(...w.goldPos); g.visible = !w.bossSpec; this.scene.add(g); this.extra.push(g); this.gold = g; const halo = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffe27a, transparent: true, opacity: 0.18, depthWrite: false, toneMapped: false })); g.add(halo); }
     this.shotGeo = makeShot();
   }
   buildLights() { this.lightPool = new LightPool(this.scene, this.world.lights, 4); this.lightsAdded = []; }
@@ -64,6 +67,8 @@ export class Game {
     // local player
     const mv = this.app.paused ? { x: 0, y: 0 } : readMove();
     const inp = this.app.paused ? {} : { mx: mv.x, my: mv.y, jumpP: edge('jump'), jumpH: held('jump'), spinP: edge('spin'), blastP: edge('blast'), hookP: edge('hook'), actP: edge('act') };
+    const st = w.steer; if (st && st.on) { st.mx = inp.mx || 0; st.my = inp.my || 0; inp.mx = inp.my = 0; inp.blastP = inp.spinP = inp.hookP = false; if (inp.jumpP) { inp.jumpP = false; st.on = false; this.toastMsg('🚶 You let go of the wheel'); } }
+    if (w.tick) w.tick(dt, this);
     me.update(dt, inp, this); me.updateBlob(w);
     // checkpoints (per player)
     for (const c of this.cps) if (!c.mine && Math.hypot(me.x - c.x, me.z - c.z) < 1.6 && Math.abs(me.y - c.y) < 2) { this.cps.forEach((q) => { q.mine = false; q.obj.lamp.material.color.set(0x777777); }); c.mine = true; c.obj.lamp.material.color.set(0x7dffb0); me.cp = [c.x, c.y + 0.1, c.z + 0.0]; me.cpYaw = c.yaw || 0; sfx('check'); this.fx.burst(c.x, c.y + 2.6, c.z, 0x7dffb0, 12); this.toastMsg('✅ Checkpoint!'); }
@@ -102,7 +107,7 @@ export class Game {
   render(dt) { this.fx.update(dt); followShadow(this.me.x, this.me.y, this.me.z); }
   // ------------------------------------------------ host-only: plates/doors/gold
   hostLogic(dt) { const w = this.world; const ps = this.alivePlayers(); const m = this.actors.martina;
-    for (const pl of w.plates) { let on = ps.some((p) => Math.abs(p.x - pl.x) < pl.r && Math.abs(p.z - pl.z) < pl.r && Math.abs(p.y - pl.y) < 0.8); if (m && Math.hypot(m.x - pl.x, m.z - pl.z) < pl.r + 1) on = true; if (on !== pl.on) { pl.on = on; pl.dirty = true; } }
+    for (const pl of w.plates) { if (pl.latch && pl.on) continue; let on = ps.some((p) => Math.abs(p.x - pl.x) < pl.r && Math.abs(p.z - pl.z) < pl.r && Math.abs(p.y - pl.y) < 0.8); if (m && Math.hypot(m.x - pl.x, m.z - pl.z) < pl.r + 1) on = true; if (on !== pl.on) { pl.on = on; pl.dirty = true; } }
     for (const d of w.doors) if (!d.open) { const ok = d.need.every((id) => { const pl = w.plates.find((q) => q.id === id); if (pl) return pl.on; const lv = w.levers.find((q) => q.id === id); return lv ? lv.on : false; }); if (ok) this.setDoor(d.id, true); }
   }
   setDoor(id, open, remote) { const d = this.world.doors.find((q) => q.id === id); if (!d || d.open === open) return; d.open = open; sfx('door'); if (open && d.msg) this.toastMsg(d.msg); if (!remote && this.online && this.host) this.net.bc({ t: 'door', id, open }); }
@@ -116,15 +121,15 @@ export class Game {
   pick(id, pid, local) { const e = this.world.ents[id]; if (!e || e.got) return; if (!this.host && local) { this.net.send({ t: 'pick', id }); } this.applyPick(e, pid); if (this.host && this.online) this.net.bc({ t: 'got', id, pid }); }
   applyPick(e, pid) { if (e.got) return; e.got = true; this.got.add(e.id); const T = this.tally;
     if (e.k === 'crumb') { T.crumbs++; sfx('crumb'); this.fx.sparkle(e.x, e.y, e.z, 0xffd23f); }
-    else if (e.k === 'cheese') { T.cheese++; sfx('cheese'); this.fx.burst(e.x, e.y, e.z, 0xffd23f, 16); this.toastMsg('🧀 Big cheese! +10'); }
-    else if (e.k === 'part') { T.parts.push(e.n); sfx('part'); this.fx.burst(e.x, e.y, e.z, 0x3ff0ff, 18); this.toastMsg(`⚙️ Ratita Industries part ${T.parts.length}/5`); }
-    else if (e.k === 'baby') { T.babies.push(e.n); sfx('baby'); this.fx.confetti(e.x, e.y, e.z, 30); this.toastMsg(`🐭 Baby Ratita rescued! ${T.babies.length}/3`); if (e.obj) e.obj.root.visible = false; }
+    else if (e.k === 'cheese') { T.cheese++; sfx('cheese'); this.fx.burst(e.x, e.y, e.z, 0xffd23f, 16); this.toastMsg(this.pirate ? '💰 Bag of doubloons! +10' : '🧀 Big cheese! +10'); }
+    else if (e.k === 'part') { T.parts.push(e.n); sfx('part'); this.fx.burst(e.x, e.y, e.z, 0x3ff0ff, 18); this.toastMsg(this.pirate ? `💎 Pirate gem ${T.parts.length}/5` : `⚙️ Ratita Industries part ${T.parts.length}/5`); }
+    else if (e.k === 'baby') { T.babies.push(e.n); sfx('baby'); this.fx.confetti(e.x, e.y, e.z, 30); this.toastMsg(this.pirate ? `🧰 Treasure chest! ${T.babies.length}/3` : `🐭 Baby Ratita rescued! ${T.babies.length}/3`); if (e.obj) e.obj.root.visible = false; }
     else if (e.k === 'heart') { sfx('heart'); for (const p of this.players.values()) if (p.local) p.hearts = Math.min(p.maxHearts, p.hearts + 1); }
     else if (e.k === 'crate') { T.crumbs += 5; T.crates++; sfx('pop'); this.fx.burst(e.x, e.y + 0.6, e.z, 0xd8a15a, 14); this.fx.burst(e.x, e.y + 0.6, e.z, 0xffd23f, 8); if (e.obj) e.obj.visible = false; if (e.s) e.s.off = true; }
     this.hud.dirty = true; }
   animPickups(dt) { const t = this.T, m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), v = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
     for (const k in this.inst) { const { im, list } = this.inst[k]; for (const e of list) { const sc = e.got ? 0 : 1; q.setFromAxisAngle(up, t * 2 + e.id); v.set(e.x, e.y + Math.sin(t * 3 + e.id) * 0.12, e.z); s.setScalar(sc); m.compose(v, q, s); im.setMatrixAt(e.ii, m); } im.instanceMatrix.needsUpdate = true; }
-    for (const b of this.babies) if (!b.got) { b.obj.root.position.y = b.y + Math.sin(t * 2 + b.id) * 0.2; b.obj.root.rotation.y = t * 0.6; animRat(b.obj.rat, dt, { speed: 2, air: false, glide: false, spin: 0, vy: 0, squash: 0, lean: 0 }); if (Math.random() < 0.05) this.fx.sparkle(b.x, b.y, b.z, 0xff9fe0); }
+    for (const b of this.babies) if (!b.got) { b.obj.root.position.y = b.y + Math.sin(t * 2 + b.id) * 0.2; b.obj.root.rotation.y = t * 0.6; if (b.obj.rat) animRat(b.obj.rat, dt, { speed: 2, air: false, glide: false, spin: 0, vy: 0, squash: 0, lean: 0 }); else if (b.obj.lid) b.obj.lid.rotation.z = 0.15 + Math.max(0, Math.sin(t * 3 + b.id)) * 0.35; if (Math.random() < 0.05) this.fx.sparkle(b.x, b.y, b.z, 0xff9fe0); }
     if (this.gold && this.gold.visible) { this.gold.rotation.y = t * 1.5; this.gold.position.y = this.world.goldPos[1] + Math.sin(t * 2) * 0.2; if (Math.random() < 0.3) this.fx.sparkle(this.gold.position.x, this.gold.position.y, this.gold.position.z); }
     for (const h of this.hookObjs) { const on = h === this.hookT; h.obj.scale.setScalar(on ? 1.25 + Math.sin(t * 10) * 0.1 : 1); h.obj.rotation.y = t; }
   }
@@ -157,9 +162,10 @@ export class Game {
     return best; }
   // ------------------------------------------------ interactions
   updateAct(inp) { const me = this.me; let a = this.act && this.act.kind === 'door' ? this.act : null; this.act = null;
-    const m = this.actors.martina; if (m && m.st === 'idle' && Math.hypot(me.x - m.x, me.z - m.z) < 4.5) a = { kind: 'martina', label: '🐢 Ask Martina for help' };
+    const m = this.actors.martina; if (m && m.st === 'idle' && Math.hypot(me.x - m.x, me.z - m.z) < 4.5) a = { kind: 'martina', label: m.label || '🐢 Ask Martina for help' };
     for (const lv of this.world.levers) if (!lv.on && Math.hypot(me.x - lv.x, me.z - lv.z) < 2 && Math.abs(me.y - lv.y) < 1.5) a = { kind: 'lever', id: lv.id, label: '🔧 Pull lever' };
-    for (const k of this.world.kiosks || []) if (Math.hypot(me.x - k.x, me.z - k.z) < k.r && Math.abs(me.y - k.y) < 2) a = { kind: 'kiosk', id: k.id, label: k.label };
+    for (const k of this.world.kiosks || []) if (Math.hypot(me.x - k.x, me.z - k.z) < k.r && Math.abs(me.y - k.y) < (k.dy || 2) && (!k.when || k.when(this))) a = { kind: 'kiosk', id: k.id, label: typeof k.label === 'function' ? k.label(this) : k.label, fn: k.fn };
+    if (this.world.actsFn && !this.app.paused && !a) { const a2 = this.world.actsFn(me, this); if (a2) a = Object.assign({ kind: 'fn' }, a2); }
     // grapple target highlight
     this.hookT = me.gadgets.has('grapple') ? this.hookTarget(me) : null;
     this.hud.setAct(a, !!this.hookT); this.curAct = a;
@@ -169,7 +175,8 @@ export class Game {
     if (a.kind === 'martina') { if (this.host) this.actors.actMartina(); else this.net.send({ t: 'act', what: 'martina' }); }
     else if (a.kind === 'lever') { if (this.host) this.pullLever(a.id); else this.net.send({ t: 'act', what: 'lever', id: a.id }); }
     else if (a.kind === 'door') this.app.enterLevelDoor(a.id);
-    else if (a.kind === 'kiosk') this.app.openKiosk(a.id);
+    else if (a.kind === 'kiosk') { if (a.fn) a.fn(this.app, this); else this.app.openKiosk(a.id); }
+    else if (a.kind === 'fn' && a.fn) a.fn(this.app, this);
   }
   pullLever(id) { const lv = this.world.levers.find((q) => q.id === id); if (!lv || lv.on) return; lv.on = true; if (lv.obj) lv.obj.rotation.z = -0.9; sfx('door'); if (this.online && this.host) this.net.bc({ t: 'lever', id }); }
   // ------------------------------------------------ events
@@ -178,7 +185,7 @@ export class Game {
   onBossStart(B, remote) { this.hud.boss(B); sfx('boss'); playMusic('boss'); this.toastMsg('⚠️ ' + B.D.n + '!'); }
   onBossReset(B) { this.hud.boss(null); playMusic(this.world.music || this.levelId); }
   onBossTired() {}
-  onBossDefeated(B, remote) { this.hud.boss(null); sfx('win'); this.fx.confetti(B.x, B.y + 3, B.z, 90); this.toastMsg('🎉 ' + B.D.n + ' beaten! Grab the Golden Cheese!'); playMusic(this.world.music || this.levelId); if (this.gold) { this.gold.visible = true; this.world.goldPos = this.world.goldPos || [B.x, B.y + 1.5, B.z]; } }
+  onBossDefeated(B, remote) { this.hud.boss(null); sfx('win'); this.fx.confetti(B.x, B.y + 3, B.z, 90); this.toastMsg('🎉 ' + B.D.n + ' beaten! ' + (this.world.pirate ? 'Grab the map piece! 🗺️' : 'Grab the Golden Cheese!')); playMusic(this.world.music || this.levelId); if (this.gold) { this.gold.visible = true; this.world.goldPos = this.world.goldPos || [B.x, B.y + 1.5, B.z]; } }
   finish(remote) { if (this.done) return; this.done = true; sfx('win'); this.fx.confetti(this.me.x, this.me.y + 2, this.me.z, 120); const T = this.tally;
     const res = { level: this.levelId, crumbs: T.crumbs, cheese: T.cheese, parts: T.parts.slice(), babies: T.babies.slice(), time: T.time, crates: T.crates };
     if (this.online && this.host && !remote) this.net.bc({ t: 'done', res });
@@ -188,13 +195,15 @@ export class Game {
     if (IN.camDX || IN.camDY) { c.yaw -= IN.camDX * 0.0085 * sens * (S.opts.invertX ? -1 : 1); c.pitch = Math.max(-0.15, Math.min(1.15, c.pitch + IN.camDY * 0.005 * sens)); IN.camDX = IN.camDY = 0; }
     const manual = performance.now() - IN.lastCam < 1500;
     if (!manual && me.speed > 1 && !me.zip) { let d = me.yaw - c.yaw; while (d > PI) d -= PI * 2; while (d < -PI) d += PI * 2; if (Math.abs(d) < 2.2) c.yaw += d * Math.min(1, dt * 0.9 * (me.speed / 7)); }
-    const B = this.actors.boss; const bossOn = B && B.active && !B.dead; const want = bossOn ? 9.5 : (this.world.camDist || 6.6);
+    const B = this.actors.boss; const bossOn = B && B.active && !B.dead; const steer = this.world.steer && this.world.steer.on; let want = bossOn ? 9.5 : (this.world.camDist || 6.6); let pmax = 1.15;
+    for (const q of this.world.zonesAt(me.x, me.y + 0.3, me.z)) if (q.type === 'camz') { want = Math.min(want, q.dist); pmax = q.pmax || pmax; }
+    if (steer) { want = 30; let dy = PI - c.yaw; while (dy > PI) dy -= PI * 2; while (dy < -PI) dy += PI * 2; if (!manual) c.yaw += dy * Math.min(1, dt * 1.5); c.pitch += (0.3 - c.pitch) * Math.min(1, dt * 2); } if (c.pitch > pmax) c.pitch += (pmax - c.pitch) * Math.min(1, dt * 4);
     c.dist += (want - c.dist) * Math.min(1, dt * 2);
-    const ty = me.y + 1.0 + Math.min(0, me.vy) * 0.02; c.tgt.set(me.x, c.snap ? ty : c.tgt.y + (ty - c.tgt.y) * (1 - Math.exp(-dt * (me.onGround ? 6 : 3))), me.z);
+    const ty = steer ? 7 : me.y + 1.0 + Math.min(0, me.vy) * 0.02; const tx = steer ? 0 : me.x, tz = steer ? 2 : me.z; if (steer || c.wasSteer) { const k = c.snap ? 1 : Math.min(1, dt * 3); c.tgt.x += (tx - c.tgt.x) * k; c.tgt.z += (tz - c.tgt.z) * k; c.tgt.y += (ty - c.tgt.y) * k; c.wasSteer = steer || Math.hypot(c.tgt.x - me.x, c.tgt.z - me.z) > 0.3; } else c.tgt.set(me.x, c.snap ? ty : c.tgt.y + (ty - c.tgt.y) * (1 - Math.exp(-dt * (me.onGround ? 6 : 3))), me.z);
     const dir = new THREE.Vector3(-Math.sin(c.yaw) * Math.cos(c.pitch), Math.sin(c.pitch), -Math.cos(c.yaw) * Math.cos(c.pitch));
     // camera collision: ignore floors and small clutter (only big things pull the camera in), smoothed with hysteresis so it never snaps
-    const big = (q) => q.cam !== false && !q.off && !q.nocam && !q.floor && (q.max[1] - q.min[1]) > 1.2 && Math.max(q.max[0] - q.min[0], q.max[2] - q.min[2]) > 1.6;
-    let d = this.world.ray(c.tgt, dir, c.dist + 0.5, big); d = Math.max(1.2, Math.min(c.dist, d - 0.45));
+    const big = (q) => q.camBlock || (q.cam !== false && !q.off && !q.nocam && !q.floor && (q.max[1] - q.min[1]) > 1.2 && Math.max(q.max[0] - q.min[0], q.max[2] - q.min[2]) > 1.6);
+    let d = steer ? c.dist + 1 : this.world.ray(c.tgt, dir, c.dist + 0.5, big); d = Math.max(1.2, Math.min(c.dist, d - 0.45));
     if (c.cd == null || c.snap) c.cd = d;
     else if (d < c.cd - 0.05) c.cd += (d - c.cd) * Math.min(1, dt * 9); // pull in quickly but smoothly
     else if (d > c.cd + 0.35) c.cd += (d - c.cd) * Math.min(1, dt * 2.2); // ease back out slowly, only once clearly free
@@ -206,6 +215,6 @@ export class Game {
     cam.lookAt(c.tgt.x, c.tgt.y + 0.2, c.tgt.z); this.hideOccluders(cam.position, c.tgt); this.hideStatic(cam.position, c.tgt); const fov = E.baseFov + (bossOn ? 4 : 0); if (Math.abs(cam.fov - fov) > 0.1) { cam.fov += (fov - cam.fov) * Math.min(1, dt * 3); cam.updateProjectionMatrix(); }
   }
   // ------------------------------------------------ remote player management
-  addRemote(pid, info, slot) { if (this.players.has(pid)) return this.players.get(pid); const p = new Player({ rat: info.rat, outfit: info.outfit, name: info.name, pid, slot }); p.addTo(this.scene); p.place(this.world.start); this.players.set(pid, p); this.hud.dirty = true; return p; }
+  addRemote(pid, info, slot) { if (this.players.has(pid)) return this.players.get(pid); const p = new Player({ rat: info.rat, outfit: info.outfit, dress: info.dress, name: info.name, pid, slot }); p.addTo(this.scene); p.place(this.world.start); this.players.set(pid, p); this.hud.dirty = true; return p; }
   removeRemote(pid) { const p = this.players.get(pid); if (!p || p.local) return; p.removeFrom(this.scene); this.players.delete(pid); this.hud.dirty = true; }
 }

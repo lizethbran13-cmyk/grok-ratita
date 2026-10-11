@@ -9,5 +9,6 @@ export function initMats() {
   MATS.e = new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.05, metalness: 0, transparent: true, opacity: 0.32, clearcoat: 1, depthWrite: false, side: THREE.DoubleSide }); // glass / water
   MATS.l = new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false });                         // glowing bits (bloom)
   MATS.fur = MATS.f; MATS.w = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.82, metalness: 0 }); // walls/ceilings (no shadow casting)
+  MATS.s = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, side: THREE.DoubleSide }); // sail cloth / leaves (two-sided)
   return MATS;
 }

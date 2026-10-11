@@ -1,3 +1,4 @@
+import { myDress } from './pirate.js';
 // Co-op for up to 3 via GrokNet (PeerJS). Host-authoritative world (enemies, bosses, Candy, pickups, doors);
 // each rat moves itself (owner-predicted) and reports hits/pickups to the host, which validates and relays.
 import { S, persist } from './save.js';
@@ -6,6 +7,7 @@ import { esc, $ } from './util.js';
 import { sfx } from './audio.js';
 import { panel, closePanel } from './ui.js';
 const GN = window.GrokNet;
+const cleanDress = (d) => d && typeof d === 'object' ? { top: String(d.top || 'none').slice(0, 12), skin: String(d.skin || 'none').slice(0, 12), acc: String(d.acc || 'none').slice(0, 12) } : null;
 export class Net {
   constructor(app) { this.app = app; this.room = null; this.looks = {}; this.acc = 0; this.n = 0; this.level = 'hq'; this.seed = 1; }
   get online() { return !!(this.room && this.room.opened); }
@@ -49,7 +51,7 @@ export class Net {
       c.querySelector('#bLeave').onclick = () => { this.leave(); app.toTitle(); };
       c.querySelectorAll('[data-r]').forEach((b) => b.onclick = () => { S.rat = b.dataset.r; persist(); sfx('squeak'); this.sendLook(); this.roomPanel(); });
       const st = c.querySelector('#bStart'); if (st) st.onclick = () => { closePanel(); app.loadLevel('hq', true); }; }); }
-  sendLook() { const L = { t: 'look', name: this.myName(), rat: S.rat, outfit: S.outfit }; if (this.room.isHost) { this.looks[this.room.pid] = L; this.room.broadcast({ t: 'looks', looks: this.looks }); } else this.room.send(L); }
+  sendLook() { const L = { t: 'look', name: this.myName(), rat: S.rat, outfit: S.outfit, dress: myDress() }; if (this.room.isHost) { this.looks[this.room.pid] = L; this.room.broadcast({ t: 'looks', looks: this.looks }); } else this.room.send(L); }
   bind(room) { this.room = room; const app = this.app;
     room.on('status', (t) => this.status(t, true));
     room.on('open', () => { this.status('Connected!', true); sfx('cheese'); this.sendLook(); this.roomPanel(); app.hud.toast(room.isHost ? 'Room ' + room.code + ' is open!' : 'Joined room ' + room.code + '!'); });
@@ -67,7 +69,7 @@ export class Net {
   leave() { if (!this.room) return; try { this.room.leave(); } catch (e) {} this.room = null; this.looks = {}; }
   // ---------- messages ----------
   onMsg(d, from) { const app = this.app, g = app.game; if (!d || typeof d !== 'object') return; const host = this.room && this.room.isHost;
-    if (d.t === 'look' && host) { this.looks[from] = { name: GN.cleanName(d.name), rat: RATS.some((r) => r.id === d.rat) ? d.rat : 'luna', outfit: String(d.outfit || 'none').slice(0, 12) }; this.room.broadcast({ t: 'looks', looks: this.looks }); if (app.state !== 'play') this.roomPanel(); return; }
+    if (d.t === 'look' && host) { this.looks[from] = { name: GN.cleanName(d.name), rat: RATS.some((r) => r.id === d.rat) ? d.rat : 'luna', outfit: String(d.outfit || 'none').slice(0, 12), dress: cleanDress(d.dress) }; this.room.broadcast({ t: 'looks', looks: this.looks }); if (app.state !== 'play') this.roomPanel(); return; }
     if (d.t === 'looks' && !host) { this.looks = d.looks || {}; if (app.state !== 'play') this.roomPanel(); return; }
     if (d.t === 'load' && !host) { app.loadLevel(d.level, false, { seed: d.seed }); return; }
     if (!g) return;
