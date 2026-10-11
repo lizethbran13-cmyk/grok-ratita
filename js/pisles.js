@@ -131,8 +131,13 @@ BUILD.p_volcano = (w) => { base(w, 'p_volcano', { skyTop: 0x5a3a6a, skyMid: 0xf5
   talk(w, -8, 50, 8, 60, 'par', 'Lava. Of course there\u2019s lava. My tail feathers are already toasty.');
   scatter(w, { cx: 0, cz: 0, w: 110, d: 120, L: land }, 24, (x, z, k) => { w.add('m', blobGeo(k & 31, 0.3, 2), k % 2 ? C.basalt : 0x5b4f4f, x, L, z, 0, k, 0, 1.4 + (k % 3), 1 + (k % 4) * 0.6, 1.3 + (k % 2)); w.solid(x - 1.2, L, z - 1.2, x + 1.2, L + 1, z + 1.2); if (k % 4 === 0) crystal(w, x + 1.5, L, z, 0.5, 0xff7a1a, false); }, 31, (x, z) => Math.abs(x) < 9 || (z < 30 && z > 14) || (z < -6 && z > -16) || z < -40 || Math.hypot(x + 28, z - 2) < 14 || Math.hypot(x - 28, z - 2) < 14);
   w.crumbLine(0, L, 48, 0, L, 34, 5); w.cheese(10, L, 40); w.heartP(-8, L, 36);
+  // basalt spires, glowing cracks, charred trees and steam vents for a dense volcanic look
+  scatter(w, { cx: 0, cz: 0, w: 110, d: 120, L: land }, 36, (x, z, k) => { const h = 3 + (k % 5) * 1.6; w.add('m', cone(7), k % 2 ? 0x3a3436 : 0x524646, x, L, z, 0, k, 0, 1.1 + (k % 3) * 0.4, h, 1.1 + (k % 2) * 0.4); w.solid(x - 0.8, L, z - 0.8, x + 0.8, L + h * 0.8, z + 0.8);
+    if (k % 3 === 0) { w.add('l', tube([[x - 1.5, L + 0.03, z], [x, L + 0.03, z + 0.8], [x + 1.6, L + 0.03, z - 0.4]], 0.12, 10, 4), 0xff7a1a, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1); }
+    if (k % 4 === 1) { w.add('m', cyl(8), 0x2b2222, x + 1.6, L, z + 1, 0.15, 0, 0.1, 0.25, 5, 0.25); w.add('m', cyl(6), 0x2b2222, x + 1.6, L + 3.4, z + 1, 0, 0, 0.9, 0.12, 1.8, 0.12); } }, 33, (x, z) => Math.abs(x) < 10 || (z < 30 && z > 13) || (z < -4 && z > -18) || z < -40 || Math.hypot(x + 28, z - 2) < 15 || Math.hypot(x - 28, z - 2) < 15 || Math.hypot(x - 30, z + 30) < 12 || Math.hypot(x + 30, z + 30) < 12 || (x > 12 && z < 14 && z > -6));
+  [[-40, 38], [38, 34], [-44, -26], [42, -30]].forEach(([x, z]) => { w.add('m', torus(0.4, 20), C.basalt, x, L + 0.2, z, PI / 2, 0, 0, 1.4, 1.4, 1.2); w.anims.push(() => { if (w.game && Math.random() < 0.35 && inV(x, L + 2, z)) w.game.fx.emit(x + (Math.random() - 0.5), L + 0.5, z + (Math.random() - 0.5), (Math.random() - 0.5), 4 + Math.random() * 3, (Math.random() - 0.5), 0.5, 0xe5e7eb, 1.6, -0.6, 0.1); }); });
   // lava river 1: stepping stones
-  lava(w, -60, 16, 60, 28, L); for (let i = 0; i < 4; i++) { const x = -2 + (i % 2) * 4, z = 26 - i * 3.2; w.add('m', blobGeo(i + 11, 0.2, 2), C.basalt, x, L, z, 0, i, 0, 1.6, 1, 1.5); w.solid(x - 1.2, L - 1, z - 1.2, x + 1.2, L + 0.6, z + 1.2, { floor: true }); }
+  lava(w, -47, 16, 47, 28, L); for (let i = 0; i < 4; i++) { const x = -2 + (i % 2) * 4, z = 26 - i * 3.2; w.add('m', blobGeo(i + 11, 0.2, 2), C.basalt, x, L, z, 0, i, 0, 1.6, 1, 1.5); w.solid(x - 1.2, L - 1, z - 1.2, x + 1.2, L + 0.6, z + 1.2, { floor: true }); }
   w.crumbArc(-2, L + 1, 26, 2, L + 1, 16, 2, 4); w.cp(0, L, 31, PI); talk(w, -10, 28, 10, 34, 'par', 'Hop the stones. Floor is lava. Literally. This isn\u2019t a game. Well, it IS a game.');
   // valve 1 (west), on a geyser-lifted ledge
   mesa(w, -28, 2, 14, 12, 9, C.basalt, 0x6b4f4f, L); geyser(w, -18, L, 10, 1.4, 12, 36); w.part(-18, L + 9, 10); latchPlate(w, 'v1', -28, 9, 2, 1.4, 0x3ff0ff); w.part(-32, 9, -2); talk(w, -24, 6, -12, 14, 'par', 'Stand on the steam geyser and up you go. Wheee. I mean... boring.');
@@ -140,7 +145,7 @@ BUILD.p_volcano = (w) => { base(w, 'p_volcano', { skyTop: 0x5a3a6a, skyMid: 0xf5
   lava(w, 14, -4, 40, 12, L); w.mover(16.5, L - 0.2, 4, [3, 0.6, 3], [20, 0, 0], 6, 0, 0x5b4f4f); w.mover(22, L - 0.2, -1, [3, 0.6, 3], [0, 0, 9], 4.5, 0.5, 0x5b4f4f);
   mesa(w, 44, 2, 8, 10, 3, C.basalt, 0x6b4f4f, L); latchPlate(w, 'v2', 44, 3, 2, 1.4, 0x3ff0ff); w.part(44, 3, 6); w.baby(46, 3, -1.5); w.cheese(42, 3, 5); talk(w, 8, 0, 16, 10, 'par', 'Ride the rocks. Don\u2019t touch the orange stuff. Orange is BAD.');
   // lava river 2 with a forge on the far side (enterable), valve 3 inside
-  lava(w, -60, -16, 60, -6, L); ropeBridge(w, 0, -5.6, 0, -16.4, L + 0.6, 2.6, 0.3); w.cp(0, L, -2, PI);
+  lava(w, -52, -16, 52, -6, L); ropeBridge(w, 0, -5.6, 0, -16.4, L + 0.6, 2.6, 0.3); w.cp(0, L, -2, PI);
   const FZ = -28; w.slab('m', 0x5b4f4f, -8, L, FZ, 2, 7, 16, 0.2); w.slab('m', 0x5b4f4f, 8, L, FZ, 2, 7, 16, 0.2); w.slab('m', 0x5b4f4f, 0, L, FZ - 8, 18, 7, 2, 0.2); w.slab('m', 0x5b4f4f, -5, L, FZ + 8, 4, 7, 2, 0.2); w.slab('m', 0x5b4f4f, 5, L, FZ + 8, 4, 7, 2, 0.2); w.slab('m', 0x5b4f4f, 0, L + 4.5, FZ + 8, 6, 2.5, 2, 0.2);
   ceiling(w, -9, FZ - 9, 9, FZ + 9, L + 7, 0.8, 0x3a3436); w.add('m', lathe([[0, 0], [1.6, 0], [1.2, 6], [0, 6]], 16), 0x3a3436, 5, L + 7.8, FZ - 4); camZone(w, -7, FZ - 7, 7, FZ + 7, L - 1, L + 7, 4.4, 0.45);
   w.add('x', rbox(2.4, 1.0, 1.0, 0.2), 0x4b4b52, -3, L + 1.4, FZ - 2); w.add('x', rbox(1.0, 1.0, 0.8, 0.1), 0x4b4b52, -3, L + 0.5, FZ - 2); w.solid(-4.2, L, FZ - 2.5, -1.8, L + 1.9, FZ - 1.5);
@@ -152,13 +157,18 @@ BUILD.p_volcano = (w) => { base(w, 'p_volcano', { skyTop: 0x5a3a6a, skyMid: 0xf5
   // the west lava tube (gem + chest), reached by a geyser
   mesa(w, -30, -30, 10, 12, 7, C.basalt, 0x6b4f4f, L); geyser(w, -22, L, -22, 1.3, 10, 34); w.baby(-32, 7, -33); w.part(-27, 7, -34);
   // crater gate + arena
-  rockWall(w, -60, -46, -6, -42, L, 12, C.basalt); rockWall(w, 6, -46, 60, -42, L, 12, C.basalt); w.door('gate', 0, L, -44, 12, 8, 4, ['v1', 'v2', 'v3'], 0x4b4b52, '❄️ Pssshhh! The valves cooled the crater gate. It\u2019s open!'); w.cp(0, L, -38, PI);
+  rockWall(w, -52, -46, -6, -42, L, 12, C.basalt); rockWall(w, 6, -46, 52, -42, L, 12, C.basalt); w.door('gate', 0, L, -44, 12, 8, 4, ['v1', 'v2', 'v3'], 0x4b4b52, '❄️ Pssshhh! The valves cooled the crater gate. It\u2019s open!'); w.cp(0, L, -38, PI);
   talk(w, -8, -40, 8, -34, 'par', 'Three valves pressed? Then the gate opens. If not, go press them. I\u2019ll wait. Grumpily.');
   rockWall(w, -26, -78, -22, -46, L, 12, C.basalt); rockWall(w, 22, -78, 26, -46, L, 12, C.basalt); rockWall(w, -26, -82, 26, -78, L, 12, C.basalt);
   w.slab('m', 0x4a4040, 0, L - 2, -62, 44, 2, 32, 0.2); w.solid(-22, L - 2, -78, 22, L, -46, { floor: true }); lava(w, -21, -77, 21, -74, L + 0.1);
   for (let i = 0; i < 4; i++) torch(w, -18 + i * 12, L, -72, 3, 0xff7a1a); w.heartP(-14, L, -52); w.heartP(14, L, -52); w.cp(0, L, -48, PI);
   talk(w, -18, -52, 18, -47, 'par', 'Sizzle the Salamander! He shoots fire rings. JUMP over them. I\u2019ll be over here. Far away.');
   bossEnd(w, 'sizzle', 0, -62, [-20, -72, 20, -48]);
+  // the volcano itself, smoking behind the crater
+  w.add('m', lathe([[0, 0], [62, 0], [44, 18], [26, 44], [16, 58], [12, 56], [0, 56]], 48, 'mmagma'), 0x4a3f3f, 0, -2, -150); w.add('l', rcyl(12.5, 1.2, 0.3, 32), 0xff6a1a, 0, 53.5, -150, 0, 0, 0, 1, 1, 1, 1.3);
+  for (let i = 0; i < 5; i++) { const a = i * 1.26 + 0.3; w.add('l', tube([[Math.cos(a) * 13, 54, -150 + Math.sin(a) * 13], [Math.cos(a) * 28, 38, -150 + Math.sin(a) * 28], [Math.cos(a) * 48, 10, -150 + Math.sin(a) * 48]], 1.6, 24, 6), 0xff5a1a, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0.9); }
+  w.lights.push({ x: 0, y: 62, z: -150, c: 0xff6a1a, i: 80, d: 140 });
+  w.anims.push(() => { if (w.game && Math.random() < 0.6 && inView(0, 60, -150, 30)) w.game.fx.emit((Math.random() - 0.5) * 16, 56, -150 + (Math.random() - 0.5) * 16, (Math.random() - 0.5) * 2, 6 + Math.random() * 4, (Math.random() - 0.5) * 2, 2.6, Math.random() < 0.3 ? 0xff9a4a : 0x6b6070, 4, -0.3, 0.2); });
   w.title = '🌋 Mount Magma';
 };
 // ======================================================================= 4. TORTUGA LAGOON
