@@ -70,7 +70,7 @@ BUILD.pship = (w) => {
   flag(w, 0, 36, -2, 3, 0x111827, PI / 2);
   // crow's nest
   w.add('m', rcyl(2.7, 0.4, 0.1, 28), 0x7c4a22, 0, 14.6, -2); w.solid(-2.6, 14.6, -4.6, 2.6, 15, 0.6); w.add('m', lathe([[2.5, 0], [2.7, 0], [2.75, 1.2], [2.55, 1.2]], 28, 'nest'), 0x8b5a2b, 0, 15, -2); for (let i = 0; i < 3; i++) w.add('x', torus(0.08, 32), 0x4b4b52, 0, 15.2 + i * 0.45, -2, PI / 2, 0, 0, 2.74, 2.74, 1);
-  w.hook(3.2, 6.6, 0.8); w.hook(-3.4, 11.4, -3.6); w.hook(3.4, 16.4, -3.2);
+  w.hook(3.2, 6.6, 0.8); w.hook(4.2, 11.4, -4.5); w.hook(3.6, 16.4, -3.0);
   (w.kiosks = w.kiosks || []).push({ id: 'spy', x: 0, y: 15, z: -2, r: 3, label: '🔭 Look through the spyglass', fn: (app, g) => { const n = ISLES.find((i) => !P().done[i.id] && isleOpen(i) && (!i.final || mapPieces() >= 4)) || ISLES[ISLES.length - 1]; const s = P().sea; const dx = n.sea[0] - s.x, dz = n.sea[1] - s.z; const d = Math.hypot(dx, dz);
     const rel = Math.atan2(-dx, -dz) - s.h; let r = rel; while (r > PI) r -= PI * 2; while (r < -PI) r += PI * 2; const dir = Math.abs(r) < 0.4 ? 'straight ahead' : Math.abs(r) > 2.6 ? 'behind us' : r > 0 ? 'off the left side' : 'off the right side'; sfx('check'); g.toastMsg(`🔭 Land ho! ${n.icon} ${n.n} is ${Math.round(d)} paces ${dir}`); } });
   // ---- wheel, chart, captain, Grumbles

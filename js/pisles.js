@@ -41,7 +41,7 @@ BUILD.p_cove = (w) => { base(w, 'p_cove', {});
   talk(w, -30, -10, -20, 0, 'par', 'Pull the lever. Yes, THAT one. Do I have to do everything?');
   // east: low rocks then a tall pillar (grapple hooks)
   mesa(w, 24, -4, 18, 14, 3.5, C.rock, C.grass, L); steps(w, 24, 6, 4, 2, 1.2, 1.2, 'z', -1, C.rock, L); mesa(w, 24, -6, 6, 6, 11, 0x9a8f86, C.grass, 3.5);
-  w.hook(19.5, 9.5, -2); w.hook(28.8, 13, -7.5); w.lever('l2', 24, 11, -6, 0); w.part(25.8, 11, -7.8); w.cheese(30, 3.5, 0);
+  w.hook(19.5, 9.5, -2); w.hook(21, 13.5, -4); w.lever('l2', 24, 11, -6, 0); w.part(25.8, 11, -7.8); w.cheese(30, 3.5, 0);
   talk(w, 15, -11, 33, 3, 'par', 'Grapple the hooks to climb the pillar. Try not to fall. Or do. I\u2019d laugh.');
   // south-east islet across stepping stones: lever 3 + gem
   const isl = landPoly(w, ell(60, 37, 8, 7.5, 20, 7), L, { top: C.sand, side: C.sandW }); for (let i = 0; i < 4; i++) { const x = 37.5 + i * 3.6, z = 36 + Math.sin(i) * 1.2; w.add('m', blobGeo(i + 3, 0.2, 2), C.rock, x, 0.4, z, 0, i, 0, 1.6, 1.1, 1.5); w.solid(x - 1.3, -1, z - 1.3, x + 1.3, L + 0.25, z + 1.3, { floor: true }); }
@@ -81,7 +81,8 @@ BUILD.p_jungle = (w) => { base(w, 'p_jungle', { fog: 0xcdeccf, fogD: 0.0032, hem
   dropZone(w, -10, 12, 12, 34, 1.3, 0x8b5a2b, 14); talk(w, -10, 30, 12, 36, 'par', 'COCONUTS! Duck! Well, rats can\u2019t duck. Run!');
   w.crumbLine(2, L, 48, 2, L, 10, 9); w.enemy('gull', -4, L + 3, 24, { range: 6 }); w.enemy('crab', 4, L, 44, { axis: 'x', range: 4 }); w.cheese(-16, L, 46); w.heartP(14, L, 40);
   // treetop route (west): hooks + platforms in the canopy, gem + chest
-  [[-28, 6, 34], [-34, 10, 24], [-28, 14, 14]].forEach(([x, y, z], i) => { w.add('m', rcyl(2.2, 0.5, 0.15, 20), C.woodL, x, L + y, z); w.solid(x - 2.1, L + y, z - 2.1, x + 2.1, L + y + 0.5, z + 2.1); w.add('m', cyl(12), 0x6b4423, x, L, z, 0, 0, 0, 0.7, y, 0.7); w.solid(x - 0.7, L, z - 0.7, x + 0.7, L + y, z + 0.7); w.add('g', blobGeo(i + 4, 0.2, 2), 0x2f9e4a, x, L + y + 6, z, 0, i, 0, 4.5, 3, 4.5); w.hook(x + 1.6, L + y + 3.2, z + 1.6); });
+  [[-28, 6, 34], [-34, 10, 24], [-28, 14, 14]].forEach(([x, y, z], i) => { w.add('m', rcyl(2.2, 0.5, 0.15, 20), C.woodL, x, L + y, z); w.solid(x - 2.1, L + y, z - 2.1, x + 2.1, L + y + 0.5, z + 2.1); w.add('m', cyl(12), 0x6b4423, x, L, z, 0, 0, 0, 0.7, y, 0.7); w.solid(x - 0.7, L, z - 0.7, x + 0.7, L + y, z + 0.7); w.add('g', blobGeo(i + 4, 0.2, 2), 0x2f9e4a, x, L + y + 6, z, 0, i, 0, 4.5, 3, 4.5); });
+  w.hook(-27, L + 8.6, 35); w.hook(-33, L + 12.6, 25.5); w.hook(-29, L + 16.6, 15.5);
   w.part(-28, L + 14.5, 14); w.baby(-34, L + 10.5, 24); w.part(-28, L + 6.5, 34); w.crumbArc(-28, L + 7, 34, -34, L + 11, 24, 2, 5); talk(w, -36, 30, -22, 42, 'par', 'Treetop huts. Grapple up. I\u2019ll just... fly. Like a normal bird.');
   // the river gorge + rope bridge, and a broken bridge to the east (glide it)
   w.add('m', rbox(130, 0.6, 10, 0.2), 0x2b7a8c, 0, -0.9, -1); ropeBridge(w, -18, 4.4, -18, -6.4, L + 0.15, 2.6, 0.6); w.cp(-18, L, 7, PI);
