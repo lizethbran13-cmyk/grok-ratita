@@ -28,7 +28,7 @@ export class Actors {
     const e = { id: this.nid++, kind: 'e', type, x, y, z, hx: x, hz: z, hy: y, yaw: Math.random() * 6, hp: D.hp, D, rig: m, st: 'patrol', t: Math.random() * 5, range: o.range || 4, axis: o.axis || null, dead: false, flash: 0, speed: 0 }; this.list.push(e); return e; }
   addCandy(c) { const r = makeCandy(); this.group.add(r.root); this.candy = { kind: 'candy', x: c.x, y: 0, z: c.z, yaw: c.yaw || 0, rig: r, st: c.sleep ? 'sleep' : 'roam', path: c.path || [[c.x, c.z]], pi: 0, t: 0, speed: 0, home: [c.x, c.z], bounds: c.bounds, maxY: c.maxY || 1.6, barkT: 0 }; }
   addMartina(m) { const r = makeMartina(); this.group.add(r.root); this.martina = { kind: 'martina', x: m.x, y: m.y || 0, z: m.z, yaw: m.yaw || 0, rig: r, st: 'idle', path: m.path || [], pi: 0, speed: 0, plate: m.plate, say: m.say || 'Hi friend! Need a hand?', done: false, name: m.name || 'Martina', name2: m.name2 || m.name || 'Martina', label: m.label }; }
-  addBoss(b) { const D = BOSS[b.type]; const r = makeBoss(b.type); this.group.add(r.root); r.root.visible = true;
+  addBoss(b) { const D = b.D ? Object.assign({}, BOSS[b.type], b.D) : BOSS[b.type]; const r = makeBoss(b.type); this.group.add(r.root); r.root.visible = true;
     this.boss = { kind: 'boss', type: b.type, D, x: b.x, y: b.y, z: b.z, yaw: b.yaw || 0, rig: r, st: 'wait', t: 0, hp: D.hp, arena: b.arena, mi: 0, vx: 0, vz: 0, flash: 0, active: false, dead: false, jumpT: 0 }; }
   // ---------------- host simulation ----------------
   step(dt) {
