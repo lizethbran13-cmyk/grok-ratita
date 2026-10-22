@@ -17,6 +17,7 @@ import { readMove, edge, held, IN } from './input.js';
 import { piratePickupGeos, makeChest, makeMapGoal } from './pmodels.js';
 import { myDress } from './pirate.js';
 import './plevels.js';
+import './oldtown.js';
 const PI = Math.PI;
 let PG = null, PGP = null;
 export class Game {
