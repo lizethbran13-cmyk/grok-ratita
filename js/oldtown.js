@@ -150,7 +150,7 @@ BUILD.ot_goo = (w) => { lab(w, 72, 54, 28, 0x5f6f5a, 0x4d5a49);
   cobweb(w, -35, 26, -26, PI / 4, 3); cobweb(w, 35, 26, 26, -3 * PI / 4, 3); [[-20, 24], [6, 24], [30, 10]].forEach(([x, z]) => dustPile(w, x, z, 1)); w.heartP(4, 0, 14); w.cheese(-33, 0, 0);
   // boss arena south-centre, gated by the lever + plate
   w.door('goo', 4, 0, 18, 1.2, 4, 8, ['goo'], 0xa855f7, '🧪 The sprayer room hisses open...'); w.slab('m', IRON, 4, 0, 24.5, 1.2, 4, 5, 0.2);
-  w.bossSpec = { type: 'sprinkler', x: -8, y: 0, z: 18, yaw: 0, arena: [-24, 10, 3, 27], D: { n: 'Gloop the Goo-Sprayer', proj: GOO } }; w.goldPos = [-8, 1.6, 18];
+  w.bossSpec = { type: 'sprinkler', x: -10, y: 0, z: 13, yaw: 0, arena: [-24, 10, 3, 27], D: { n: 'Gloop the Goo-Sprayer', proj: GOO } }; w.goldPos = [-10, 1.6, 13];
 };
 // ---------------------------------------------------------------- 3. THE FOUNDERS' VAULT
 BUILD.ot_vault = (w) => { lab(w, 66, 56, 30, 0x4a4560, 0x3b3550); w.music = 'toys';
