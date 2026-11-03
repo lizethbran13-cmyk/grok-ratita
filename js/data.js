@@ -1,7 +1,7 @@
 // Game data: rats, levels, gadgets, upgrades, outfits.
 export const RATS = [
   { id: 'luna', n: 'Luna', d: 'Silver speedster. Quick on her paws.', col: '#a9afbd' },
-  { id: 'pirat', n: 'Pi-rat', d: 'One-eyed explorer. Never gives up!', col: '#c99a6b' },
+  { id: 'pirat', n: 'Pi-rat', d: 'White hooded, one-eyed explorer. Never gives up!', col: '#f8f6f2' },
   { id: 'snowie', n: 'Snowie', d: 'Snowy white with ruby eyes. Super bouncy.', col: '#fbfbff' },
 ];
 export const LEVELS = [

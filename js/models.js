@@ -20,7 +20,7 @@ function eyes(b, y, z, sep, r, opt = {}) {
   });
 }
 // ---------------------------------------------------------------- rats
-export const RAT_COL = { luna: { fur: 0xa9afbd, dark: 0x7d8394, belly: 0xeceef3, eye: 0x1b1b24, name: 'Luna' }, pirat: { fur: 0xc99a6b, dark: 0x9c7148, belly: 0xf6e7d4, eye: 0x1b1b24, name: 'Pi-rat' }, snowie: { fur: 0xfbfbff, dark: 0xe3e1ee, belly: 0xffffff, eye: 0xd0315a, name: 'Snowie' } };
+export const RAT_COL = { luna: { fur: 0xa9afbd, dark: 0x7d8394, belly: 0xeceef3, eye: 0x1b1b24, name: 'Luna' }, pirat: { fur: 0xf8f6f2, dark: 0xe9b8bf, belly: 0xffffff, hood: 0x6b5e52, eye: 0x1b1b24, name: 'Pi-rat' }, snowie: { fur: 0xfbfbff, dark: 0xe3e1ee, belly: 0xffffff, eye: 0xd0315a, name: 'Snowie' } };
 export function makeRat(id, outfit, dress) {
   const C0 = RAT_COL[id] || RAT_COL.luna, SK = dress && SKINS[dress.skin]; const C = SK ? Object.assign({}, C0, SK) : C0; const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
   const t = MB(); // torso
@@ -29,7 +29,7 @@ export function makeRat(id, outfit, dress) {
   t[FB].add(P.sphere, C.fur, 0, 0.38, -0.36, 0, 0, 0, 0.33, 0.29, 0.32);
   t.f.add(P.sphere, C.belly, 0, 0.27, 0.06, 0, 0, 0, 0.27, 0.2, 0.38); skinPattern(t, SK);
   if (id === 'luna') t.f.add(P.sphere, C.dark, 0, 0.55, -0.15, 0, 0, 0, 0.26, 0.12, 0.42); // darker saddle
-  if (id === 'pirat') { t.f.add(P.sphere, 0xffffff, 0, 0.5, 0.18, 0, 0, 0, 0.24, 0.16, 0.2); }
+  if (id === 'pirat') { t.f.add(P.sphere, C.hood, 0, 0.42, 0.2, 0, 0, 0, 0.3, 0.26, 0.2); } // hooded rat: dark hood over head & shoulders
   // Ratita Industries backpack
   t.g.add(P.rbox, 0xff4fa0, 0, 0.66, -0.2, 0, 0, 0, 0.36, 0.22, 0.34); t.g.add(P.rboxS, 0xffd23f, 0, 0.78, -0.2, 0, 0, 0, 0.3, 0.06, 0.28);
   t.l.add(P.sphere, 0x3ff0ff, 0, 0.7, -0.38, 0, 0, 0, 0.06, 0.06, 0.03, 0.8); [-1, 1].forEach((s) => t.g.add(P.torus, 0xff4fa0, s * 0.2, 0.52, -0.08, 0, PI / 2, 0, 0.14, 0.2, 0.2));
@@ -37,8 +37,9 @@ export function makeRat(id, outfit, dress) {
   // head
   const head = new THREE.Group(); head.position.set(0, 0.48, 0.36); body.add(head);
   const h = MB();
-  h[FB].add(P.sphere, C.fur, 0, 0, 0, 0, 0, 0, 0.27, 0.25, 0.27);
-  h[FB].add(P.sphere, C.fur, 0, -0.05, 0.2, 0.25, 0, 0, 0.17, 0.15, 0.22);
+  h[FB].add(P.sphere, C.hood || C.fur, 0, 0, 0, 0, 0, 0, 0.27, 0.25, 0.27);
+  h[FB].add(P.sphere, C.hood || C.fur, 0, -0.05, 0.2, 0.25, 0, 0, 0.17, 0.15, 0.22);
+  if (C.hood) { h.f.add(P.sphere, 0xffffff, 0, 0.12, 0.2, -0.5, 0, 0, 0.045, 0.16, 0.06); h.f.add(P.sphere, 0xffffff, 0, -0.06, 0.36, 0.25, 0, 0, 0.09, 0.08, 0.08); } // forehead blaze + white muzzle tip
   h.f.add(P.sphere, C.belly, 0, -0.1, 0.25, 0.25, 0, 0, 0.12, 0.08, 0.15);
   h.g.add(P.sphere, 0xff8fb0, 0, -0.03, 0.42, 0, 0, 0, 0.055, 0.045, 0.045);
   [-1, 1].forEach((sd) => { h.f.add(P.sphere, C.dark, sd * 0.2, 0.2, -0.04, 0, sd * 0.3, sd * -0.35, 0.15, 0.15, 0.04); h.g.add(P.sphere, 0xffb3c8, sd * 0.2, 0.2, -0.015, 0, sd * 0.3, sd * -0.35, 0.1, 0.1, 0.02);
