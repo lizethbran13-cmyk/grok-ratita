@@ -20,7 +20,7 @@ function eyes(b, y, z, sep, r, opt = {}) {
   });
 }
 // ---------------------------------------------------------------- rats
-export const RAT_COL = { luna: { fur: 0xa9afbd, dark: 0x7d8394, belly: 0xeceef3, eye: 0x1b1b24, name: 'Luna' }, pirat: { fur: 0xf8f6f2, dark: 0xe9b8bf, belly: 0xffffff, hood: 0x6b5e52, eye: 0x1b1b24, name: 'Pi-rat' }, snowie: { fur: 0xfbfbff, dark: 0xe3e1ee, belly: 0xffffff, eye: 0xd0315a, name: 'Snowie' } };
+export const RAT_COL = { luna: { fur: 0xa9afbd, dark: 0x7d8394, belly: 0xeceef3, eye: 0x1b1b24, name: 'Luna' }, pirat: { fur: 0xf8f6f2, dark: 0xe9b8bf, belly: 0xffffff, hood: 0x8a7868, eye: 0x1b1b24, name: 'Pi-rat' }, snowie: { fur: 0xfbfbff, dark: 0xe3e1ee, belly: 0xffffff, eye: 0xd0315a, name: 'Snowie' } };
 export function makeRat(id, outfit, dress) {
   const C0 = RAT_COL[id] || RAT_COL.luna, SK = dress && SKINS[dress.skin]; const C = SK ? Object.assign({}, C0, SK) : C0; const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
   const t = MB(); // torso
